@@ -1,0 +1,18 @@
+# NAME
+
+Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your app
+
+# VERSION
+
+version 0.0.1
+
+# AUTHOR
+
+Chisel <chisel@chizography.net>
+
+# COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2013 by Chisel Wright.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.

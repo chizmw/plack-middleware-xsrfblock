@@ -1,0 +1,4 @@
+/Plack-Middleware-XSRFBlock*.tar.gz
+/Plack-Middleware-XSRFBlock*/
+/.build/
+.*sw?

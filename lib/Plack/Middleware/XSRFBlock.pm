@@ -48,7 +48,6 @@ sub call {
     my $cookie = $request->cookies->{$self->cookie_name};
 
     # deal with form posts
-$DB::single=1;
     if ($request->method =~ m{^post$}i) {
         $self->log(info => 'POST submitted');
         

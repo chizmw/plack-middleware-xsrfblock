@@ -89,7 +89,12 @@ $app{'Basic App'} = builder {
     use Log::Dispatch;
     my $logger = Log::Dispatch->new(
         outputs => [
-            ['TestDiag', min_level=>'debug'],
+            [
+                'Screen',
+                min_level => 'debug',
+                stderr    => 1,
+                newline   => 1
+            ]
         ],
     );
     enable "LogDispatch", logger => $logger;

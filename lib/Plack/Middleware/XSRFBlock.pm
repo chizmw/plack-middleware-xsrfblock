@@ -52,7 +52,7 @@ sub call {
         $self->log(info => 'POST submitted');
         
         my $val = $request->parameters->{ $self->parameter_name } || '';
-        return $self->xsrf_detected
+        return $self->xsrf_detected({ msg => 'form field missing'})
             unless $val;
     }
 
@@ -73,7 +73,11 @@ sub call {
 
 sub xsrf_detected {
     my $self    = shift;
-    my $env     = shift;
+    my $args    = shift;
+    my $env = $args->{env};
+    my $msg = $args->{msg}
+        ? sprintf('XSRF detected [%s]', $args->{msg})
+        : 'XSRF detected';
 
     $self->log(error => 'XSRF detected, returning HTTP_FORBIDDEN');
 
@@ -81,11 +85,10 @@ sub xsrf_detected {
         return $app_for_blocked->($env, $@);
     }
 
-    my $body = 'XSRF detected';
     return [
         HTTP_FORBIDDEN,
-        [ 'Content-Type' => 'text/plain', 'Content-Length' => length($body) ],
-        [ $body ]
+        [ 'Content-Type' => 'text/plain', 'Content-Length' => length($msg) ],
+        [ $msg ]
     ];
 }
 

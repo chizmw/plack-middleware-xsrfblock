@@ -14,6 +14,10 @@ sub test_psgi {
     my $client = delete $args{client} or croak "client test code needed";
     my $app    = delete $args{app}    or croak "app needed";
 
+    if (my @unexpected = keys %args) {
+        carp "unexpected arguments passed to test_psgi: @unexpected";
+    }
+
     my $cb = sub {
         my $req = shift;
         $req->uri->scheme('http')    unless defined $req->uri->scheme;

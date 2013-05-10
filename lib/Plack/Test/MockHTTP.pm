@@ -13,6 +13,7 @@ sub test_psgi {
 
     my $client = delete $args{client} or croak "client test code needed";
     my $app    = delete $args{app}    or croak "app needed";
+    my $ua     = delete $args{ua};    # optional
 
     if (my @unexpected = keys %args) {
         carp "unexpected arguments passed to test_psgi: @unexpected";
@@ -22,6 +23,17 @@ sub test_psgi {
         my $req = shift;
         $req->uri->scheme('http')    unless defined $req->uri->scheme;
         $req->uri->host('localhost') unless defined $req->uri->host;
+
+        # if we've been given a UA and there's a cookie-jar, set it
+        # TODO: make sure this works with multiple cookies
+        # XXX: I think it currently doesn't
+        if ($ua and my $cookie_string = $ua->cookie_jar->as_string) {
+            # Set-Cookie3 is an LWP-ism
+            if ($cookie_string =~ m{^Set-Cookie3:\s+(.+?); }) {
+                $req->header(Cookie => $1);
+            }
+        }
+
         my $env = $req->to_psgi;
 
         my $res = try {

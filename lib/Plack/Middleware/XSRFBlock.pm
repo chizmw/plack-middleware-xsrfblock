@@ -4,6 +4,7 @@ use warnings;
 use parent 'Plack::Middleware';
 
 use Digest::HMAC_SHA1 'hmac_sha1_hex';
+use HTML::Parser;
 use HTTP::Status qw(:constants);
 
 use Plack::Response;
@@ -12,6 +13,7 @@ use Plack::Util::Accessor qw(
     blocked
     cookie_name
     logger
+    meta_tag
     parameter_name
     _token_generator
 );
@@ -45,12 +47,12 @@ sub call {
     my $request = Plack::Request->new($env);
 
     # grab the cookie where we store the token
-    my $cookie = $request->cookies->{$self->cookie_name};
+    my $cookie_value = $request->cookies->{$self->cookie_name};
 
     # deal with form posts
     if ($request->method =~ m{^post$}i) {
         $self->log(info => 'POST submitted');
-        
+
         my $val = $request->parameters->{ $self->parameter_name } || '';
 
         # it's an immediate fail if we can't find the parameter
@@ -59,24 +61,105 @@ sub call {
 
         # get the value we expect from the cookie
         return $self->xsrf_detected({ msg => 'cookie missing'})
-            unless $cookie;
+            unless defined $cookie_value;
 
-        return $self->xsrf_detected({ msg => 'FIX ME'})
-            unless $cookie;
+        # reject if the form value and the token don't match
+        return $self->xsrf_detected({ msg => 'invalid token'})
+            if $val ne $cookie_value;
     }
 
     return Plack::Util::response_cb($self->app->($env), sub {
         my $res = shift;
 
+        my $token = $cookie_value ||= $self->_token_generator->();
+
         # we need to add our cookie
         $self->_set_cookie(
-            $self->_token_generator->(),
+            $token,
             $res,
             path    => '/',
             expires => time + (3 * 60 * 60), # three hours into the future
         );
 
-        return $res;
+        # we can't form-munge anything non-HTML
+        my $ct = Plack::Util::header_get($res->[1], 'Content-Type') || '';
+        if($ct !~ m{^text/html}i and $ct !~ m{^application/xhtml[+]xml}i){
+            return $res;
+        }
+
+        # let's inject our field+token into the form
+        my @out;
+        my $http_host = $request->uri->host;
+        my $parameter_name = $self->parameter_name;
+
+        my $p = HTML::Parser->new( api_version => 3 );
+
+        $p->handler(default => [\@out , '@{text}']),
+
+        # we only care about two types of tag:
+        $p->report_tags(qw/head form/);
+
+        # inject out xSRF information
+        $p->handler(
+            start => sub {
+                my($tag, $attr, $text) = @_;
+                # we never want to thrown anything away
+                push @out, $text;
+
+                # for easier comparison
+                $tag = lc($tag);
+
+                # If we found the head tag and we want to add a <meta> tag
+                if( $tag eq 'head' && $self->meta_tag) {
+                    # Put the csrftoken in a <meta> element in <head>
+                    # So that you can get the token in javascript in your
+                    # App to set in X-CSRF-Token header for all your AJAX
+                    # Requests
+                    push @out,
+                        sprintf(
+                            q{<meta name="%s" content="$s"/>},
+                            $self->meta_tag,
+                            $token
+                        );
+                }
+
+                # If tag isn't 'form' and method isn't 'post' we dont care
+                return unless $tag eq 'form' && $attr->{'method'} =~ /post/i;
+
+                if(
+                    !(
+                        $attr->{'action'} =~ m{^https?://([^/:]+)[/:]}
+                            and
+                        $1 ne $http_host
+                    )
+                ) {
+                    push @out,
+                        sprintf(
+                            '<input type="hidden" "name="%s" value="%s" />',
+                            $parameter_name,
+                            $token
+                        );
+                }
+
+                # TODO: determine xhtml or html?
+                return;
+            },
+            "tagname, attr, text",
+        );
+
+        my $done;
+        return sub {
+            return if $done;
+
+            if(defined(my $chunk = shift)) {
+                $p->parse($chunk);
+            }
+            else {
+                $p->eof;
+                $done++;
+            }
+            join '', splice @out;
+        }
     });
 }
 
@@ -111,14 +194,14 @@ sub log {
 # I just can't explain it clearly right now
 sub _set_cookie {
     my($self, $id, $res, %options) = @_;
- 
+
     # TODO: Do not use Plack::Response
     my $response = Plack::Response->new(@$res);
     $response->cookies->{ $self->cookie_name } = +{
         value => $id,
         %options,
     };
- 
+
     my $final_r = $response->finalize;
     $res->[1] = $final_r->[1]; # headers
 }

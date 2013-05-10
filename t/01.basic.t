@@ -20,7 +20,7 @@ my $mapped = Test::XSRFBlock::App->mapped_app;
 my %app;
 
 $app{'psgix.input.non-buffered'} = builder {
-    if (0) {
+    if ($ENV{PLACK_DEBUG}) {
         use Log::Dispatch;
         my $logger = Log::Dispatch->new(
             outputs => [

@@ -194,7 +194,7 @@ for my $appname ('psgix.input.non-buffered', 'psgix.input.buffered') {
             $res = forbidden_ok (
                 $cb->(
                     POST "http://localhost/post",
-                    [name => 'Plack', csrf_secret => '123']
+                    [name => 'Plack', xsrf_token => '123']
                 )
             );
             is (
@@ -210,7 +210,7 @@ for my $appname ('psgix.input.non-buffered', 'psgix.input.buffered') {
             # a value from it
             $res = $cb->(
                 POST "http://localhost/post",
-                [name => 'Plack', csrf_secret => $token]
+                [name => 'Plack', xsrf_token => $token]
             );
             is (
                 $res->code,

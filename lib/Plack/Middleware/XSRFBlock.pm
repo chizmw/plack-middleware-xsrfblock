@@ -19,7 +19,7 @@ use Plack::Util::Accessor qw(
 sub prepare_app {
     my $self = shift;
 
-    $self->parameter_name('SEC') unless defined $self->parameter_name;
+    $self->parameter_name('xsrf_token') unless defined $self->parameter_name;
 
     # store the cookie_name
     $self->cookie_name(
@@ -52,8 +52,17 @@ sub call {
         $self->log(info => 'POST submitted');
         
         my $val = $request->parameters->{ $self->parameter_name } || '';
+
+        # it's an immediate fail if we can't find the parameter
         return $self->xsrf_detected({ msg => 'form field missing'})
             unless $val;
+
+        # get the value we expect from the cookie
+        return $self->xsrf_detected({ msg => 'cookie missing'})
+            unless $cookie;
+
+        return $self->xsrf_detected({ msg => 'FIX ME'})
+            unless $cookie;
     }
 
     return Plack::Util::response_cb($self->app->($env), sub {

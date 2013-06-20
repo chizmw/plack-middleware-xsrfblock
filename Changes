@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - fix content modification so we don't throw most of it away
 
 0.0.0_01  2013-06-20 12:00:04 Europe/London
 

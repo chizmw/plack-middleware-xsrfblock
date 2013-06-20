@@ -96,14 +96,16 @@ sub call {
 
         $p->handler(default => [\@out , '@{text}']),
 
-        # we only care about two types of tag:
-        $p->report_tags(qw/head form/);
+        # we need *all* tags, otherwise we end up with gibberish as the final
+        # page output
+        # i.e. unless there's a better way, we *can not* do
+        #    $p->report_tags(qw/head form/);
 
-        # inject out xSRF information
+        # inject our xSRF information
         $p->handler(
             start => sub {
                 my($tag, $attr, $text) = @_;
-                # we never want to thrown anything away
+                # we never want to throw anything away
                 push @out, $text;
 
                 # for easier comparison
@@ -143,6 +145,15 @@ sub call {
 
                 # TODO: determine xhtml or html?
                 return;
+            },
+            "tagname, attr, text",
+        );
+
+        # we never want to throw anything away
+        $p->handler(
+            default => sub {
+                my($tag, $attr, $text) = @_;
+                push @out, $text;
             },
             "tagname, attr, text",
         );

@@ -2,4 +2,6 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.0.0_01  2013-06-20 12:00:04 Europe/London
+
  - Initial release

@@ -83,7 +83,7 @@ for my $appname ('psgix.input.non-buffered', 'psgix.input.buffered') {
             my $expected_content=qq{<html>
     <head><title>the form</title></head>
     <body>
-        <form action="/post" method="post"><input type="hidden" "name="xsrf_token" value="$token" />
+        <form action="/post" method="post"><input type="hidden" name="xsrf_token" value="$token" />
             <input type="text" name="name" />
             <input type="submit" />
         </form>

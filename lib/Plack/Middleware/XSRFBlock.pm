@@ -137,7 +137,7 @@ sub call {
                 ) {
                     push @out,
                         sprintf(
-                            '<input type="hidden" "name="%s" value="%s" />',
+                            '<input type="hidden" name="%s" value="%s" />',
                             $parameter_name,
                             $token
                         );

@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - add FURTHER READING to documentation
  - add missing test module dependency
 
 0.0.0_03  2013-06-21 15:47:42 Europe/London

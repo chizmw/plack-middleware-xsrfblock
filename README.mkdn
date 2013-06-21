@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.0\_03
+version 0.0.0\_04
 
 # SYNOPSIS
 
@@ -104,6 +104,24 @@ screen/tab state).
 Trying to modify the existing module to provide the extra functionality and
 behaviour we decided worked better for our use seemed too far reaching to try
 to force into the existing module.
+
+## FURTHER READING
+
+- Preventing CSRF and XSRF Attacks
+
+    http://www.codinghorror.com/blog/2008/10/preventing-csrf-and-xsrf-attacks.html
+
+- Preventing Cross Site Request Forgery (CSRF)
+
+    https://www.golemtechnologies.com/articles/csrf
+
+- Cross-Site Request Forgeries: Exploitation and Prevention \[PDF\]
+
+    https://www.eecs.berkeley.edu/~daw/teaching/cs261-f11/reading/csrf.pdf
+
+- Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet
+
+    https://www.owasp.org/index.php/Cross-Site\_Request\_Forgery\_(CSRF)\_Prevention\_Cheat\_Sheet
 
 ## SEE ALSO
 

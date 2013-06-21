@@ -11,6 +11,7 @@ use Plack::Response;
 use Plack::Util;
 use Plack::Util::Accessor qw(
     blocked
+    cookie_expiry_seconds
     cookie_name
     logger
     meta_tag
@@ -30,6 +31,9 @@ sub prepare_app {
 
     # default to one token per session, not one per request
     $self->token_per_request( $self->token_per_request || 0 );
+
+    # default to a cookie life of three hours
+    $self->cookie_expiry_seconds( $self->cookie_expiry_seconds || (3 * 60 * 60) );
 
     $self->_token_generator(sub{
         my $data    = rand() . $$ . {} . time;
@@ -88,7 +92,7 @@ sub call {
             $token,
             $res,
             path    => '/',
-            expires => time + (3 * 60 * 60), # three hours into the future
+            expires => time + $self->cookie_expiry_seconds,
         );
 
         # we can't form-munge anything non-HTML
@@ -251,11 +255,14 @@ You may also over-ride any, or all of these values:
 
     builder {
         enable 'XSRFBlock',
-            parameter_name      => 'xsrf_token',
-            cookie_name         => 'PSGI-XSRF-Token',
-            token_per_request   => 0,
-            meta_tag            => undef,
-            blocked             => sub { return [ $status, $headers, $body ] },
+            parameter_name          => 'xsrf_token',
+            cookie_name             => 'PSGI-XSRF-Token',
+            cookie_expiry_seconds   => (3 * 60 * 60),
+            token_per_request       => 0,
+            meta_tag                => undef,
+            blocked                 => sub {
+                                        return [ $status, $headers, $body ]
+                                    },
         ;
         $app;
     }

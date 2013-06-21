@@ -14,6 +14,7 @@ use Plack::Util::Accessor qw(
     cookie_name
     logger
     meta_tag
+    token_per_request
     parameter_name
     _token_generator
 );
@@ -26,6 +27,11 @@ sub prepare_app {
     # store the cookie_name
     $self->cookie_name(
         $self->cookie_name || 'PSGI-XSRF-Token'
+    );
+
+    # default to one token per session, not one per request
+    $self->token_per_request(
+        $self->token_per_request || 0
     );
 
     $self->_token_generator(sub{
@@ -71,6 +77,13 @@ sub call {
     return Plack::Util::response_cb($self->app->($env), sub {
         my $res = shift;
 
+        # if we asked for token_per_request then we *always* create a new token
+        $cookie_value = $self->_token_generator->()
+            if $self->token_per_request;
+
+        # get the token value from:
+        # - cookie value, if it's already set
+        # - from the generator, if we don't have one yet
         my $token = $cookie_value ||= $self->_token_generator->();
 
         # we need to add our cookie

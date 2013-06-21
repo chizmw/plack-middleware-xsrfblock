@@ -65,6 +65,18 @@ sub base_app {
     };
 }
 
+sub blocked_app {
+    my $blocked_app = sub {
+        # purposely pick values we wouldn't get under normal operations
+        return  [
+            HTTP_I_AM_A_TEAPOT,
+            [ 'Content-Type' => 'text/teapot' ],
+            [ q{That door is firmly closed!} ]
+        ],
+    };
+}
+
+
 sub mapped_app {
     my $mapped = builder {
         mount "/post" => base_app();
@@ -136,6 +148,26 @@ sub setup_test_apps {
         }
         enable 'XSRFBlock',
             meta_tag => 'my_xsrf_meta_tag';
+        $mapped;
+    };
+
+    $app{'psgix.input.non-buffered.blocked'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock',
+            blocked => blocked_app;
         $mapped;
     };
 

@@ -3,6 +3,7 @@ Revision history for {{$dist->name}}
 {{$NEXT}}
 
  - add test(s) for 'meta_tag' option
+ - add test(s) for 'blocked' option
 
 0.0.0_04  2013-06-21 16:03:08 Europe/London
 

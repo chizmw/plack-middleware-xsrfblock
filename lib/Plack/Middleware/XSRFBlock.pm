@@ -340,19 +340,19 @@ to force into the existing module.
 
 =item * Preventing CSRF and XSRF Attacks
 
-http://www.codinghorror.com/blog/2008/10/preventing-csrf-and-xsrf-attacks.html
+L<http://www.codinghorror.com/blog/2008/10/preventing-csrf-and-xsrf-attacks.html>
 
 =item * Preventing Cross Site Request Forgery (CSRF)
 
-https://www.golemtechnologies.com/articles/csrf
+L<https://www.golemtechnologies.com/articles/csrf>
 
 =item * Cross-Site Request Forgeries: Exploitation and Prevention [PDF]
 
-https://www.eecs.berkeley.edu/~daw/teaching/cs261-f11/reading/csrf.pdf
+L<https://www.eecs.berkeley.edu/~daw/teaching/cs261-f11/reading/csrf.pdf>
 
 =item * Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet
 
-https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet
+L<https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet>
 
 =back
 

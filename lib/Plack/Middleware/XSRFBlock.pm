@@ -22,7 +22,8 @@ use Plack::Util::Accessor qw(
 sub prepare_app {
     my $self = shift;
 
-    $self->parameter_name('xsrf_token') unless defined $self->parameter_name;
+    # this needs a value if we aren't given one
+    $self->parameter_name( $self->parameter_name || 'xsrf_token' );
 
     # store the cookie_name
     $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );

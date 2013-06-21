@@ -30,9 +30,6 @@ sub prepare_app {
     # default to one token per session, not one per request
     $self->token_per_request( $self->token_per_request || 0 );
 
-    # help AJAX users by adding the token as a meta tag
-    $self->meta_tag( undef ) unless $self->meta_tag;
-
     $self->_token_generator(sub{
         my $data    = rand() . $$ . {} . time;
         my $key     = "@INC";

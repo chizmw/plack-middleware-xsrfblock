@@ -257,6 +257,7 @@ You may also over-ride any, or all of these values:
             cookie_name         => 'PSGI-XSRF-Token',
             token_per_request   => 0,
             meta_tag            => undef,
+            blocked             => sub { return [ $status, $headers, $body ] },
         ;
         $app;
     }
@@ -287,6 +288,14 @@ section of output pages.
 
 This is useful when you are using javascript that requires access to the token
 value for making AJAX requests.
+
+=item blocked (default: undef)
+
+If this is set it should be a PSGI application that is returned instead of the
+default HTTP_FORBIDDEN(403) and text/plain response.
+
+This could be useful if you'd like to perform some action that's more in
+keeping with your application - e.g. return a styled error page.
 
 =back
 

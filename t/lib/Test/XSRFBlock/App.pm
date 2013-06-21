@@ -81,4 +81,100 @@ sub mapped_app {
     };
 }
 
+sub setup_test_apps {
+    my %app;
+    my $mapped = mapped_app;
+
+    $app{'psgix.input.non-buffered'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock';
+        $mapped;
+    };
+
+    # psgix.input.buffered
+    $app{'psgix.input.buffered'} = builder {
+        enable sub {
+            my $app = shift;
+            sub {
+                my $env = shift;
+                my $req = Plack::Request->new($env);
+                my $content = $req->content; # <<< force psgix.input.buffered true.
+                $app->($env);
+            };
+        };
+        enable 'XSRFBlock';
+        $mapped;
+    };
+
+    $app{'psgix.input.non-buffered.token_per_request'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock',
+            token_per_request => 1;
+        $mapped;
+    };
+
+    # psgix.input.buffered
+    $app{'psgix.input.buffered.token_per_request'} = builder {
+        enable sub {
+            my $app = shift;
+            sub {
+                my $env = shift;
+                my $req = Plack::Request->new($env);
+                my $content = $req->content; # <<< force psgix.input.buffered true.
+                $app->($env);
+            };
+        };
+        enable 'XSRFBlock',
+            token_per_request => 1;
+        $mapped;
+    };
+
+    $app{'psgix.input.non-buffered.token_per_session'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock',
+            token_per_request => 0; # <<< disable token_per_request
+        $mapped;
+    };
+
+    return \%app;
+}
 1;

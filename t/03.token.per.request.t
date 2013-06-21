@@ -15,14 +15,12 @@ use FindBin::libs;
 use Test::XSRFBlock::App;
 use Test::XSRFBlock::Util ':all';
 
-my $mapped = Test::XSRFBlock::App->mapped_app;
-
 # normal input
-my %app = %{ setup_test_apps() };
+my %app = %{ Test::XSRFBlock::App->setup_test_apps };
 
 # two requests for an app WITHOUT token_per_request should have the same
 # token
-for my $appname ('psgix.input.non-buffered.no-xsrf') {
+for my $appname ('psgix.input.non-buffered.token_per_session') {
     subtest $appname => sub {
         my $ua = LWP::UserAgent->new;
         $ua->cookie_jar( HTTP::Cookies->new );
@@ -44,7 +42,10 @@ for my $appname ('psgix.input.non-buffered.no-xsrf') {
 }
 
 # test buffered and non-buffered apps for token_per_request behaviour
-for my $appname ('psgix.input.non-buffered', 'psgix.input.buffered') {
+for my $appname (
+    'psgix.input.non-buffered.token_per_request',
+    'psgix.input.buffered.token_per_request',
+) {
     subtest $appname => sub {
         my $ua = LWP::UserAgent->new;
         $ua->cookie_jar( HTTP::Cookies->new );
@@ -90,65 +91,5 @@ sub _two_requests {
     return \%token;
 }
 
-sub setup_test_apps {
-    my %app;
-    $app{'psgix.input.non-buffered'} = builder {
-        if ($ENV{PLACK_DEBUG}) {
-            use Log::Dispatch;
-            my $logger = Log::Dispatch->new(
-                outputs => [
-                    [
-                        'Screen',
-                        min_level => 'debug',
-                        stderr    => 1,
-                        newline   => 1
-                    ]
-                ],
-            );
-            enable "LogDispatch", logger => $logger;
-        }
-        enable 'XSRFBlock',
-            token_per_request => 1;
-        $mapped;
-    };
-
-    # psgix.input.buffered
-    $app{'psgix.input.buffered'} = builder {
-        enable sub {
-            my $app = shift;
-            sub {
-                my $env = shift;
-                my $req = Plack::Request->new($env);
-                my $content = $req->content; # <<< force psgix.input.buffered true.
-                $app->($env);
-            };
-        };
-        enable 'XSRFBlock',
-            token_per_request => 1;
-        $mapped;
-    };
-
-    $app{'psgix.input.non-buffered.no-xsrf'} = builder {
-        if ($ENV{PLACK_DEBUG}) {
-            use Log::Dispatch;
-            my $logger = Log::Dispatch->new(
-                outputs => [
-                    [
-                        'Screen',
-                        min_level => 'debug',
-                        stderr    => 1,
-                        newline   => 1
-                    ]
-                ],
-            );
-            enable "LogDispatch", logger => $logger;
-        }
-        enable 'XSRFBlock',
-            token_per_request => 0; # <<< disable token_per_request
-        $mapped;
-    };
-
-    return \%app;
-}
 
 done_testing;

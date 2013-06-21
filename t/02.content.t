@@ -15,44 +15,7 @@ use FindBin::libs;
 use Test::XSRFBlock::App;
 use Test::XSRFBlock::Util ':all';
 
-my $mapped = Test::XSRFBlock::App->mapped_app;
-
-# normal input
-my %app;
-
-$app{'psgix.input.non-buffered'} = builder {
-    if ($ENV{PLACK_DEBUG}) {
-        use Log::Dispatch;
-        my $logger = Log::Dispatch->new(
-            outputs => [
-                [
-                    'Screen',
-                    min_level => 'debug',
-                    stderr    => 1,
-                    newline   => 1
-                ]
-            ],
-        );
-        enable "LogDispatch", logger => $logger;
-    }
-    enable 'XSRFBlock';
-    $mapped;
-};
-
-# psgix.input.buffered
-$app{'psgix.input.buffered'} = builder {
-    enable sub {
-        my $app = shift;
-        sub {
-            my $env = shift;
-            my $req = Plack::Request->new($env);
-            my $content = $req->content; # <<< force psgix.input.buffered true.
-            $app->($env);
-        };
-    };
-    enable 'XSRFBlock';
-    $mapped;
-};
+my %app = %{ Test::XSRFBlock::App->setup_test_apps };
 
 for my $appname ('psgix.input.non-buffered', 'psgix.input.buffered') {
     subtest $appname => sub {

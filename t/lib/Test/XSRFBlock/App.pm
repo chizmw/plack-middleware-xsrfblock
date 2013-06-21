@@ -119,6 +119,26 @@ sub setup_test_apps {
         $mapped;
     };
 
+    $app{'psgix.input.non-buffered.meta_tag'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock',
+            meta_tag => 'my_xsrf_meta_tag';
+        $mapped;
+    };
+
     $app{'psgix.input.non-buffered.token_per_request'} = builder {
         if ($ENV{PLACK_DEBUG}) {
             use Log::Dispatch;

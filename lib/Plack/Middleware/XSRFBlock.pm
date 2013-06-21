@@ -131,7 +131,7 @@ sub call {
                     # Requests
                     push @out,
                         sprintf(
-                            q{<meta name="%s" content="$s"/>},
+                            q{<meta name="%s" content="%s"/>},
                             $self->meta_tag,
                             $token
                         );

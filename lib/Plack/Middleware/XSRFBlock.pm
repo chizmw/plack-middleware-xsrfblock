@@ -25,14 +25,10 @@ sub prepare_app {
     $self->parameter_name('xsrf_token') unless defined $self->parameter_name;
 
     # store the cookie_name
-    $self->cookie_name(
-        $self->cookie_name || 'PSGI-XSRF-Token'
-    );
+    $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );
 
     # default to one token per session, not one per request
-    $self->token_per_request(
-        $self->token_per_request || 0
-    );
+    $self->token_per_request( $self->token_per_request || 0 );
 
     # help AJAX users by adding the token as a meta tag
     $self->meta_tag( undef ) unless $self->meta_tag;

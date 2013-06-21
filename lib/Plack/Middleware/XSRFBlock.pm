@@ -311,22 +311,19 @@ L<Preventing CSRF and XSRF Attacks|http://www.codinghorror.com/blog/2008/10/prev
 The driving comment behind this implementation is from
 L<the Felten and Zeller paper|https://www.eecs.berkeley.edu/~daw/teaching/cs261-f11/reading/csrf.pdf>:
 
-    When a user visits a site, the site should generate a
-    (cryptographically strong) pseudorandom value and set it as
-    a cookie on the user's machine. The site should require
-    every form submission to include this pseudorandom value as
-    a form value and also as a cookie value. When a POST request
-    is sent to the site, the request should only be considered
-    valid if the form value and the cookie value are the same.
-    When an attacker submits a form on behalf of a user, he can
-    only modify the values of the form. An attacker cannot read
-    any data sent from the server or modify cookie values, per
-    the same-origin policy.  This means that while an attacker
-    can send any value he wants with the form, he will be unable
-    to modify or read the value stored in the cookie. Since the
-    cookie value and the form value must be the same, the
-    attacker will be unable to successfully submit a form unless
-    he is able to guess the pseudorandom value.
+    When a user visits a site, the site should generate a (cryptographically
+    strong) pseudorandom value and set it as a cookie on the user's machine.
+    The site should require every form submission to include this pseudorandom
+    value as a form value and also as a cookie value. When a POST request is
+    sent to the site, the request should only be considered valid if the form
+    value and the cookie value are the same.  When an attacker submits a form
+    on behalf of a user, he can only modify the values of the form. An
+    attacker cannot read any data sent from the server or modify cookie
+    values, per the same-origin policy.  This means that while an attacker can
+    send any value he wants with the form, he will be unable to modify or read
+    the value stored in the cookie. Since the cookie value and the form value
+    must be the same, the attacker will be unable to successfully submit a
+    form unless he is able to guess the pseudorandom value.
 
 =head2 What's wrong with Plack::Middleware::CSRFBlock?
 

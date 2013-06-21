@@ -256,10 +256,39 @@ You may also over-ride any, or all of these values:
             parameter_name      => 'xsrf_token',
             cookie_name         => 'PSGI-XSRF-Token',
             token_per_request   => 0,
-            meta_tag            => 0,
+            meta_tag            => undef,
         ;
         $app;
     }
+
+=head1 OPTIONS
+
+=over 4
+
+=item parameter_name (default: 'xsrf_token')
+
+The name assigned to the hidden form input containing the token.
+
+=item cookie_name (default: 'PSGI-XSRF-Token')
+
+The name of the cookie used to store the token value.
+
+=item token_per_request (default: 0)
+
+If this is true a new token is assigned for each request made.
+
+This may make your application more secure, or less susceptible to
+double-submit issues.
+
+=item meta_tag (default: undef)
+
+If this is set, use the value as the name of the meta tag to add to the head
+section of output pages.
+
+This is useful when you are using javascript that requires access to the token
+value for making AJAX requests.
+
+=back
 
 =head1 EXPLANATION
 

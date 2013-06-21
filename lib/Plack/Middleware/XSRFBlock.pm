@@ -236,6 +236,31 @@ sub _set_cookie {
 This middleware blocks XSRF. You can use this middleware without any
 modifications to your application.
 
+=head1 SYNOPSIS
+
+The simplest way to use the plugin is:
+
+    use Plack::Builder;
+
+    my $app = sub { ... };
+
+    builder {
+        enable 'XSRFBlock';
+        $app;
+    }
+
+You may also over-ride any, or all of these values:
+
+    builder {
+        enable 'XSRFBlock',
+            parameter_name      => 'xsrf_token',
+            cookie_name         => 'PSGI-XSRF-Token',
+            token_per_request   => 0,
+            meta_tag            => 0,
+        ;
+        $app;
+    }
+
 =head1 EXPLANATION
 
 This module is similar in nature and intention to

@@ -140,11 +140,19 @@ sub call {
                 }
 
                 # If tag isn't 'form' and method isn't 'post' we dont care
-                return unless $tag eq 'form' && $attr->{'method'} =~ /post/i;
+                return unless
+                       defined $tag
+                    && defined $attr->{'method'}
+                    && $tag eq 'form'
+                    && $attr->{'method'} =~ /post/i;
 
                 if(
                     !(
+                        defined $attr
+                            and
                         $attr->{'action'} =~ m{^https?://([^/:]+)[/:]}
+                            and
+                        defined $http_host
                             and
                         $1 ne $http_host
                     )

@@ -3,6 +3,7 @@ Revision history for {{$dist->name}}
 {{$NEXT}}
  - Add Git Commit and Push to end of dist.ini
  - Add improved 'undef' handling in some checks
+ - Add POD explaining the error messages in more detail
 
 0.0.0_05  2013-06-24 00:29:09 Europe/London
 

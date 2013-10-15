@@ -312,6 +312,30 @@ keeping with your application - e.g. return a styled error page.
 
 =back
 
+=head1 ERRORS
+
+The module emits various errors based on the cause of the XSRF detected. The
+messages will be of the form C<XSRF detected [reason]>
+
+=over 4
+
+=item form field missing
+
+The request was submitted but there was no value submitted in the form field
+specified by <C$self->parameter_name> [default: xsrf_token]
+
+=item cookie missing
+
+There is no cookie with the name specified by C<$self->cookie_name> [default:
+PSGI-XSRF-Token]
+
+=item invalid token
+
+The cookie token and form value were both submitted correctly but the values
+do not match.
+
+=back
+
 =head1 EXPLANATION
 
 This module is similar in nature and intention to

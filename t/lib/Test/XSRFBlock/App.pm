@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use HTTP::Status qw(:constants);
+use Plack::Request;
 use Plack::Builder;
 
 my $form = <<FORM;
@@ -226,6 +227,28 @@ sub setup_test_apps {
             token_per_request => 0; # <<< disable token_per_request
         $mapped;
     };
+
+    $app{'psgix.input.non-buffered.request_header'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock',
+            header_name => 'X-XSRF-Token',
+            meta_tag => 'my_xsrf_meta_tag';
+        $mapped;
+    };
+
 
     return \%app;
 }

@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Add header_name / X-* header feature
  - Add Git Commit and Push to end of dist.ini
  - Add improved 'undef' handling in some checks
  - Add POD explaining the error messages in more detail

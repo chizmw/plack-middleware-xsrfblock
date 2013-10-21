@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.1     2013-10-21 15:35:10 UTC
  - Add header_name / X-* header feature
  - Add Git Commit and Push to end of dist.ini
  - Add improved 'undef' handling in some checks

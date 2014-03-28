@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Add cookie_options setting [github:throughnothing]
 
 0.0.1     2013-10-21 15:35:10 UTC
  - Add header_name / X-* header feature

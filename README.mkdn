@@ -25,6 +25,7 @@ You may also over-ride any, or all of these values:
         enable 'XSRFBlock',
             parameter_name          => 'xsrf_token',
             cookie_name             => 'PSGI-XSRF-Token',
+            cookie_options          => {},
             cookie_expiry_seconds   => (3 * 60 * 60),
             token_per_request       => 0,
             meta_tag                => undef,
@@ -50,6 +51,16 @@ modifications to your application.
 - cookie\_name (default: 'PSGI-XSRF-Token')
 
     The name of the cookie used to store the token value.
+
+- cookie\_options (default: {})
+
+    Extra cookie options to be set with the cookie.  This is useful for things like
+    setting `HttpOnly` to tell the browser to only send it with HTTP requests,
+    and `Secure` on the cookie to force the cookie to only be sent on SSL requests.
+
+        builder {
+            enable 'XSRFBlock', cookie_options => { secure => 1, httponly => 1 };
+        }
 
 - token\_per\_request (default: 0)
 

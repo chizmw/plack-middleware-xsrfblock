@@ -1,4 +1,5 @@
 package Plack::Middleware::XSRFBlock;
+
 use strict;
 use warnings;
 use parent 'Plack::Middleware';

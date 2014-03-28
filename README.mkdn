@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.1
+version 0.0.2
 
 # SYNOPSIS
 
@@ -119,7 +119,7 @@ messages will be of the form `XSRF detected [reason]`
 # EXPLANATION
 
 This module is similar in nature and intention to
-[Plack::Middleware::CSRFBlock](http://search.cpan.org/perldoc?Plack::Middleware::CSRFBlock) but implements the xSRF prevention in a
+[Plack::Middleware::CSRFBlock](https://metacpan.org/pod/Plack::Middleware::CSRFBlock) but implements the xSRF prevention in a
 different manner.
 
 The solution implemented in this module is based on a CodingHorror article -
@@ -144,7 +144,7 @@ The driving comment behind this implementation is from
 
 ## What's wrong with Plack::Middleware::CSRFBlock?
 
-[Plack::Middleware::CSRFBlock](http://search.cpan.org/perldoc?Plack::Middleware::CSRFBlock) is a great module.
+[Plack::Middleware::CSRFBlock](https://metacpan.org/pod/Plack::Middleware::CSRFBlock) is a great module.
 It does a great job of preventing CSRF behaviour with minimal effort.
 
 However when we tried to use it uses the session to store information - which
@@ -173,13 +173,13 @@ to force into the existing module.
 
 - Cross-Site Request Forgery (CSRF) Prevention Cheat Sheet
 
-    [https://www.owasp.org/index.php/Cross-Site\_Request\_Forgery\_(CSRF)\_Prevention\_Cheat\_Sheet](https://www.owasp.org/index.php/Cross-Site\_Request\_Forgery\_(CSRF)\_Prevention\_Cheat\_Sheet)
+    [https://www.owasp.org/index.php/Cross-Site\_Request\_Forgery\_(CSRF)\_Prevention\_Cheat\_Sheet](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_\(CSRF\)_Prevention_Cheat_Sheet)
 
 ## SEE ALSO
 
-[Plack::Middleware::CSRFBlock](http://search.cpan.org/perldoc?Plack::Middleware::CSRFBlock),
-[Plack::Middleware](http://search.cpan.org/perldoc?Plack::Middleware),
-[Plack](http://search.cpan.org/perldoc?Plack)
+[Plack::Middleware::CSRFBlock](https://metacpan.org/pod/Plack::Middleware::CSRFBlock),
+[Plack::Middleware](https://metacpan.org/pod/Plack::Middleware),
+[Plack](https://metacpan.org/pod/Plack)
 
 # AUTHOR
 
@@ -191,3 +191,9 @@ This software is copyright (c) 2013 by Chisel Wright.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
+
+# CONTRIBUTORS
+
+- Chisel <chisel.wright@net-a-porter.com>
+- Chisel Wright <chisel@chizography.net>
+- William Wolf <throughnothing@gmail.com>

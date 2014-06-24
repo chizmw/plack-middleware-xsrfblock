@@ -174,6 +174,8 @@ sub call {
                     !(
                         defined $attr
                             and
+                        exists $attr->{'action'}
+                            and
                         $attr->{'action'} =~ m{^https?://([^/:]+)[/:]}
                             and
                         defined $http_host

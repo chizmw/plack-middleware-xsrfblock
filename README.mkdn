@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.3
+version 0.0.4
 
 # SYNOPSIS
 
@@ -196,5 +196,6 @@ the same terms as the Perl 5 programming language system itself.
 
 - Chisel <chisel.wright@net-a-porter.com>
 - Chisel Wright <chisel@chizography.net>
+- Matthew Ryall <matt.ryall@gmail.com>
 - Sebastian Willert <willert@gmail.com>
 - William Wolf <throughnothing@gmail.com>

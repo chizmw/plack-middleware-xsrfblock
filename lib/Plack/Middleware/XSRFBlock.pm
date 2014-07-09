@@ -80,20 +80,23 @@ sub call {
         # If it is set ... well, either could be missing
         if (not defined $val and not length $val) {
             # no X- headers expected
-            return $self->xsrf_detected({ msg => 'form field missing'})
-                if not defined $self->header_name;
+            return $self->xsrf_detected(
+                { env => $env, msg => 'form field missing' } )
+              if not defined $self->header_name;
 
             # X- headers and form data allowed
-            return $self->xsrf_detected({ msg => 'xsrf token missing'})
+            return $self->xsrf_detected(
+                { env => $env, msg => 'xsrf token missing' } )
+
         }
 
         # get the value we expect from the cookie
-        return $self->xsrf_detected({ msg => 'cookie missing'})
-            unless defined $cookie_value;
+        return $self->xsrf_detected( { env => $env, msg => 'cookie missing' } )
+          unless defined $cookie_value;
 
         # reject if the form value and the token don't match
-        return $self->xsrf_detected({ msg => 'invalid token'})
-            if $val ne $cookie_value;
+        return $self->xsrf_detected( { env => $env, msg => 'invalid token' } )
+          if $val ne $cookie_value;
     }
 
     return Plack::Util::response_cb($self->app->($env), sub {

@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Add PSGI env to xsrf_detected arguments
+   [mryall: pull #6]
 
 0.0.3     2014-06-24 15:01:07+00:00 UTC
  - Prevent a warning for forms with no action

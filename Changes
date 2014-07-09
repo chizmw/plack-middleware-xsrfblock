@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.4     2014-07-09 12:44:03+00:00 UTC
  - Add PSGI env to xsrf_detected arguments
    [mryall: pull #6]
 

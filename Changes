@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.5     2014-07-22 15:28:43+00:00 UTC
  - stop requiring end-users have Pod::Weaver::Section::Contributors
    This was a mistake with the dist.ini Prereqs on my part
    Raised by tomhukins in issue #7

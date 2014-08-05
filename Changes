@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.6     2014-08-05 20:47:11+00:00 UTC
  - Pass app() to 'blocked' sub (pull #8)
  - Allow bypassing form input injection (pull #9)
 

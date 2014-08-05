@@ -15,6 +15,7 @@ use Plack::Util::Accessor qw(
     cookie_expiry_seconds
     cookie_name
     cookie_options
+    inject_form_input
     logger
     meta_tag
     token_per_request
@@ -28,6 +29,10 @@ sub prepare_app {
 
     # this needs a value if we aren't given one
     $self->parameter_name( $self->parameter_name || 'xsrf_token' );
+
+    # default to 1 so we inject hidden inputs to forms
+    $self->inject_form_input(
+        defined($self->inject_form_input) ? $self->inject_form_input : 1 );
 
     # store the cookie_name
     $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );
@@ -127,6 +132,8 @@ sub call {
         if($ct !~ m{^text/html}i and $ct !~ m{^application/xhtml[+]xml}i){
             return $res;
         }
+
+        return $res unless $self->inject_form_input;
 
         # let's inject our field+token into the form
         my @out;

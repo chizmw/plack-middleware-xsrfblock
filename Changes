@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Pass app() to 'blocked' sub (pull #8)
+ - Allow bypassing form input injection (pull #9)
 
 0.0.5     2014-07-22 15:28:43+00:00 UTC
  - stop requiring end-users have Pod::Weaver::Section::Contributors

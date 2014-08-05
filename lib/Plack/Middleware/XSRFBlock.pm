@@ -243,7 +243,7 @@ sub xsrf_detected {
     $self->log(error => 'XSRF detected, returning HTTP_FORBIDDEN');
 
     if (my $app_for_blocked = $self->blocked) {
-        return $app_for_blocked->($env, $@);
+        return $app_for_blocked->($env, $@, app => $self->app);
     }
 
     return [

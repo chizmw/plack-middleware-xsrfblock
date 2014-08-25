@@ -111,6 +111,16 @@ sub call {
         $cookie_value = $self->_token_generator->()
             if $self->token_per_request;
 
+        # make it easier to work with the headers
+        my $headers = Plack::Util::headers($res->[1]);
+
+        # we can't form-munge anything non-HTML
+        my $ct = $headers->get('Content-Type') || '';
+        if($ct !~ m{^text/html}i and $ct !~ m{^application/xhtml[+]xml}i){
+            return $res;
+        }
+
+        # GITHUB ISSUE #12 - set cookie after we're happy it's HTML
         # get the token value from:
         # - cookie value, if it's already set
         # - from the generator, if we don't have one yet
@@ -123,15 +133,6 @@ sub call {
             path    => '/',
             expires => time + $self->cookie_expiry_seconds,
         );
-
-        # make it easier to work with the headers
-        my $headers = Plack::Util::headers($res->[1]);
-
-        # we can't form-munge anything non-HTML
-        my $ct = $headers->get('Content-Type') || '';
-        if($ct !~ m{^text/html}i and $ct !~ m{^application/xhtml[+]xml}i){
-            return $res;
-        }
 
         return $res unless $self->inject_form_input;
 

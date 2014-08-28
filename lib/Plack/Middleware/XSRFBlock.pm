@@ -138,7 +138,7 @@ sub call {
 
         # let's inject our field+token into the form
         my @out;
-        my $http_host = $request->uri->host;
+        my $request_uri_host = $request->uri->host;
         my $parameter_name = $self->parameter_name;
 
         my $p = HTML::Parser->new( api_version => 3 );
@@ -177,23 +177,42 @@ sub call {
                 # If tag isn't 'form' and method isn't 'post' we dont care
                 return unless
                        defined $tag
-                    && defined $attr->{'method'}
                     && $tag eq 'form'
+                    && defined $attr
+                    && defined $attr->{'method'}
                     && $attr->{'method'} =~ /post/i;
 
-                if(
-                    !(
-                        defined $attr
-                            and
-                        exists $attr->{'action'}
-                            and
-                        $attr->{'action'} =~ m{^https?://([^/:]+)[/:]}
-                            and
-                        defined $http_host
-                            and
-                        $1 ne $http_host
-                    )
-                ) {
+                # getting this far means we have a tag ('form')
+                # and a method ('post')
+                # ... i.e. a form we might care about
+
+                # if we have a defined action attr, we only want to add xsrf
+                # to 'local' forms
+                # i.e. if we're localhost, we don't want to add xsrf checking
+                # to example.com
+                #
+                # Ways to be 'local':
+                #  - don't have an action (we know attr is defined to get this
+                #    far, so just check for 'action' attr
+                #  - have an action with a hostname that isn't our servername
+
+                my $form_points_to_us=
+                    # no attributes at all ... submitting to ourself
+                    (!defined $attr)
+                        ||
+                    # no 'action' attribute ... submitting to ourself
+                    (defined $attr && !exists $attr->{'action'})
+                        ||
+                    # an action that doesn't start with http(s) ... relative URL
+                    ($attr->{'action'} !~ m{^https?://([^/:]+)})
+                        ||
+                    # we're posting the form to somewhere that matches our request URL
+                    (defined $1 && ($1 eq $request_uri_host))
+                ;
+
+                # if we aren't posting somewhere far-away, add the hidden
+                # field
+                if ($form_points_to_us) {
                     push @out,
                         sprintf(
                             '<input type="hidden" name="%s" value="%s" />',

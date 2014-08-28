@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Set cookie once we know we have HTML (issue #12)
+ - Update POD docs with inject_form_input field docs (pull #10)
 
 0.0.6     2014-08-05 20:47:11+00:00 UTC
  - Pass app() to 'blocked' sub (pull #8)

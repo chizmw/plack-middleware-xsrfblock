@@ -31,8 +31,7 @@ sub prepare_app {
     $self->parameter_name( $self->parameter_name || 'xsrf_token' );
 
     # default to 1 so we inject hidden inputs to forms
-    $self->inject_form_input(
-        defined($self->inject_form_input) ? $self->inject_form_input : 1 );
+    $self->inject_form_input(1) unless defined $self->inject_form_input;
 
     # store the cookie_name
     $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );
@@ -307,6 +306,7 @@ You may also over-ride any, or all of these values:
             cookie_expiry_seconds   => (3 * 60 * 60),
             token_per_request       => 0,
             meta_tag                => undef,
+            inject_form_input       => 1,
             header_name             => undef,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
@@ -351,6 +351,15 @@ section of output pages.
 
 This is useful when you are using javascript that requires access to the token
 value for making AJAX requests.
+
+=item inject_form_input (default: 1)
+
+If this is unset, hidden inputs will not be injected into your forms, and no
+HTML parsing will be done on the page responses.
+
+This can be useful if you only do AJAX requests, and can utilize headers
+and/or cookies instead, and not need the extra overhead of processing
+the HTML document every time.
 
 =item header_name (default: undef)
 

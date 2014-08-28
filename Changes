@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.7     2014-08-28 16:51:04+00:00 UTC
  - Set cookie once we know we have HTML (issue #12)
  - Update POD docs with inject_form_input field docs (pull #10)
 

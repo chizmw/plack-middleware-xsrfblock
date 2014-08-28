@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.6
+version 0.0.7
 
 # SYNOPSIS
 
@@ -29,6 +29,7 @@ You may also over-ride any, or all of these values:
             cookie_expiry_seconds   => (3 * 60 * 60),
             token_per_request       => 0,
             meta_tag                => undef,
+            inject_form_input       => 1,
             header_name             => undef,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
@@ -76,6 +77,15 @@ modifications to your application.
 
     This is useful when you are using javascript that requires access to the token
     value for making AJAX requests.
+
+- inject\_form\_input (default: 1)
+
+    If this is unset, hidden inputs will not be injected into your forms, and no
+    HTML parsing will be done on the page responses.
+
+    This can be useful if you only do AJAX requests, and can utilize headers
+    and/or cookies instead, and not need the extra overhead of processing
+    the HTML document every time.
 
 - header\_name (default: undef)
 

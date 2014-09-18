@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.7
+version 0.0.8
 
 # SYNOPSIS
 
@@ -52,6 +52,15 @@ modifications to your application.
 - cookie\_name (default: 'PSGI-XSRF-Token')
 
     The name of the cookie used to store the token value.
+
+- cookie\_expiry\_seconds (default: 3\*60\*60)
+
+    The expiration time in seconds of the XSRF token
+
+- cookie\_is\_session\_cookie (default: 0)
+
+    If set to a true value, the XSRF token cookie will be set as a session cookie
+    and `cookie_expiry_seconds` will be ignored.
 
 - cookie\_options (default: {})
 
@@ -207,5 +216,6 @@ the same terms as the Perl 5 programming language system itself.
 - Chisel <chisel.wright@net-a-porter.com>
 - Chisel Wright <chisel@chizography.net>
 - Matthew Ryall <matt.ryall@gmail.com>
+- Michael Kröll <michael.kroell@geizhals.at>
 - Sebastian Willert <willert@gmail.com>
 - William Wolf <throughnothing@gmail.com>

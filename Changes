@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.8     2014-09-18 08:01:40+00:00 UTC
  - Add option to set XSRF token cookie as a session cookie (pull #13)
 
 0.0.7     2014-08-28 16:51:04+00:00 UTC

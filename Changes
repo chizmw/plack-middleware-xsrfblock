@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.9     2014-10-13 10:15:38+00:00 UTC
  - Optionally allow signed cookies escape token injected into html (pull #14)
 
 0.0.8     2014-09-18 08:01:40+00:00 UTC

@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.8
+version 0.0.9
 
 # SYNOPSIS
 
@@ -31,6 +31,7 @@ You may also over-ride any, or all of these values:
             meta_tag                => undef,
             inject_form_input       => 1,
             header_name             => undef,
+            secret                  => undef,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
                                     },
@@ -102,6 +103,10 @@ modifications to your application.
     can be sent in. This is useful for non-browser based submissions; e.g.
     Javascript AJAX requests.
 
+- secret (default: undef)
+
+    Signs the cookie with supplied secret (if set).
+
 - blocked (default: undef)
 
     If this is set it should be a PSGI application that is returned instead of the
@@ -134,6 +139,11 @@ messages will be of the form `XSRF detected [reason]`
 
     The cookie token and form value were both submitted correctly but the values
     do not match.
+
+- invalid signature
+
+    The cookies signature is invalid, indicating it was tampered with on the way
+    to the browser.
 
 # EXPLANATION
 
@@ -216,6 +226,7 @@ the same terms as the Perl 5 programming language system itself.
 - Chisel <chisel.wright@net-a-porter.com>
 - Chisel Wright <chisel@chizography.net>
 - Matthew Ryall <matt.ryall@gmail.com>
+- Matthias Zeichmann <matthias.zeichmann@gmail.com>
 - Michael Kröll <michael.kroell@geizhals.at>
 - Sebastian Willert <willert@gmail.com>
 - William Wolf <throughnothing@gmail.com>

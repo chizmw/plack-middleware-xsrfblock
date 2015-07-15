@@ -46,7 +46,12 @@ sub prepare_app {
     $self->cookie_options( $self->cookie_options || {} );
 
     # default to one token per session, not one per request
-    $self->token_per_request( $self->token_per_request || 0 );
+    my $token_per_request = $self->token_per_request ? 1 : 0;
+    $self->token_per_request(
+      ref $self->token_per_request eq 'CODE'
+      ? $self->token_per_request
+      : sub { $token_per_request }
+    );
 
     # default to a cookie life of three hours
     $self->cookie_expiry_seconds( $self->cookie_expiry_seconds || (3 * 60 * 60) );
@@ -123,9 +128,9 @@ sub call {
     return Plack::Util::response_cb($self->app->($env), sub {
         my $res = shift;
 
-        # if we asked for token_per_request then we *always* create a new token
+        # Determine whether to create a new token, based on the request
         $cookie_value = $self->_token_generator->()
-            if $self->token_per_request;
+            if $self->token_per_request->( $self, $request, $env );
 
         # make it easier to work with the headers
         my $headers = Plack::Util::headers($res->[1]);
@@ -388,10 +393,26 @@ and C<Secure> on the cookie to force the cookie to only be sent on SSL requests.
 
 =item token_per_request (default: 0)
 
-If this is true a new token is assigned for each request made.
+If this is true a new token is assigned for each request made (but see below).
 
-This may make your application more secure, or less susceptible to
+This may make your application more secure, but more susceptible to
 double-submit issues.
+
+If this is a coderef, the coderef will be evaluated with the following arguments:
+
+=over
+
+=item * The middleware object itself,
+
+=item * The request,
+
+=item * The environment
+
+=back
+
+If the result of the evaluation is a true value, a new token will be assigned.
+This allows fine-grained control, for example to avoid assigning new tokens when
+incidental requests are made (e.g. on-page ajax requests).
 
 =item meta_tag (default: undef)
 

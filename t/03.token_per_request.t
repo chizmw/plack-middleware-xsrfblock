@@ -65,15 +65,65 @@ for my $appname (
     };
 }
 
+# test buffered and non-buffered apps for token_per_request_sub behaviour
+for my $appname (
+    'psgix.input.non-buffered.token_per_request_sub',
+    'psgix.input.buffered.token_per_request_sub',
+) {
+    subtest $appname => sub {
+        my $ua = LWP::UserAgent->new;
+        $ua->cookie_jar( HTTP::Cookies->new );
+
+        test_psgi ua => $ua, app => $app{$appname}, client => sub {
+            my $cb  = shift;
+            my ($res, $h_cookie, $jar, $token);
+
+            my %token = %{ _two_requests($cb, $ua) };
+
+            is(
+                $token{1},
+                $token{2},
+                'cookie tokens are the same for two requests for /form/html using token_per_request_sub'
+            );
+        };
+    };
+}
+
+for my $appname (
+    'psgix.input.non-buffered.token_per_request_sub',
+    'psgix.input.buffered.token_per_request_sub',
+) {
+    subtest "$appname-post" => sub {
+        my $ua = LWP::UserAgent->new;
+        $ua->cookie_jar( HTTP::Cookies->new );
+
+        test_psgi ua => $ua, app => $app{$appname}, client => sub {
+            my $cb  = shift;
+            my ($res, $h_cookie, $jar, $token);
+
+            my %token = %{ _two_requests($cb, $ua, '/form/xhtml') };
+
+            isnt(
+                $token{1},
+                $token{2},
+                'cookie tokens are different for two requests for /form/xhtml using token_per_request_sub'
+            );
+        };
+    };
+}
+
+
 sub _two_requests {
-    my ($cb, $ua) = @_;
+    my ($cb, $ua, $url) = @_;
+
+    $url ||= "/form/html";
 
     my $jar = $ua->cookie_jar;
 
     my %token;
     # making two requests should result in different tokens
     for (1..2) {
-        my $res = $cb->(GET "/form/html");
+        my $res = $cb->(GET $url);
         is (
             $res->code,
             HTTP_OK,
@@ -90,6 +140,7 @@ sub _two_requests {
 
     return \%token;
 }
+
 
 
 done_testing;

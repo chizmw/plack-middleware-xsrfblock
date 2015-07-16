@@ -257,6 +257,9 @@ sub call {
     });
 }
 
+=head2 invalid_signature($self, $value)
+
+=cut
 sub invalid_signature {
     my ($self, $value) = @_;
 
@@ -271,6 +274,9 @@ sub invalid_signature {
     return hmac_sha1_hex($token, $self->secret) ne $signature;
 }
 
+=head2 xsrf_detected($self, $args)
+
+=cut
 sub xsrf_detected {
     my $self    = shift;
     my $args    = shift;
@@ -292,6 +298,9 @@ sub xsrf_detected {
     ];
 }
 
+=head2 log($self, $level, $msg)
+
+=cut
 sub log {
     my ($self, $level, $msg) = @_;
     $self->logger->({ level => $level, message => "XSRFBlock: $msg" });

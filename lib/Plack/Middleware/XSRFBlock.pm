@@ -546,6 +546,16 @@ L<Plack>
 
 =cut
 
+=begin markdown
+
+## BUILD STATUS
+
+[![Build status](https://badge.buildkite.com/330e67514dd501f1827bcf33db423ccadf201caf5b2b563fbf.svg)](https://buildkite.com/chizography/plack-middleware-xsrfblock)
+
+=end markdown
+
+=cut
+
 # ABSTRACT: Block XSRF Attacks with minimal changes to your app
 __END__
 # vim: ts=8 sts=4 et sw=4 sr sta

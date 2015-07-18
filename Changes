@@ -6,6 +6,7 @@ Revision history for {{$dist->name}}
  - fix #15: Use magic comment to crowbar in an essential dependency
  - Add *skeleton* POD for methods
    This is a shockingly lazy way for me to get my dist to pass Pod::Coverage tests
+ - re-arrange POD in file; so method POD appears in a sensible location
 
 0.0.9     2014-10-13 10:15:38+00:00 UTC
  - Optionally allow signed cookies escape token injected into html (pull #14)

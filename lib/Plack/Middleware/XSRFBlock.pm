@@ -4,6 +4,155 @@ use strict;
 use warnings;
 use parent 'Plack::Middleware';
 
+=head1 DESCRIPTION
+
+This middleware blocks XSRF. You can use this middleware without any
+modifications to your application.
+
+=head1 SYNOPSIS
+
+The simplest way to use the plugin is:
+
+    use Plack::Builder;
+
+    my $app = sub { ... };
+
+    builder {
+        enable 'XSRFBlock';
+        $app;
+    }
+
+You may also over-ride any, or all of these values:
+
+    builder {
+        enable 'XSRFBlock',
+            parameter_name          => 'xsrf_token',
+            cookie_name             => 'PSGI-XSRF-Token',
+            cookie_options          => {},
+            cookie_expiry_seconds   => (3 * 60 * 60),
+            token_per_request       => 0,
+            meta_tag                => undef,
+            inject_form_input       => 1,
+            header_name             => undef,
+            secret                  => undef,
+            blocked                 => sub {
+                                        return [ $status, $headers, $body ]
+                                    },
+        ;
+        $app;
+    }
+
+=head1 OPTIONS
+
+=over 4
+
+=item parameter_name (default: 'xsrf_token')
+
+The name assigned to the hidden form input containing the token.
+
+=item cookie_name (default: 'PSGI-XSRF-Token')
+
+The name of the cookie used to store the token value.
+
+=item cookie_expiry_seconds (default: 3*60*60)
+
+The expiration time in seconds of the XSRF token
+
+=item cookie_is_session_cookie (default: 0)
+
+If set to a true value, the XSRF token cookie will be set as a session cookie
+and C<cookie_expiry_seconds> will be ignored.
+
+=item cookie_options (default: {})
+
+Extra cookie options to be set with the cookie.  This is useful for things like
+setting C<HttpOnly> to tell the browser to only send it with HTTP requests,
+and C<Secure> on the cookie to force the cookie to only be sent on SSL requests.
+
+    builder {
+        enable 'XSRFBlock', cookie_options => { secure => 1, httponly => 1 };
+    }
+
+=item token_per_request (default: 0)
+
+If this is true a new token is assigned for each request made.
+
+This may make your application more secure, or less susceptible to
+double-submit issues.
+
+=item meta_tag (default: undef)
+
+If this is set, use the value as the name of the meta tag to add to the head
+section of output pages.
+
+This is useful when you are using javascript that requires access to the token
+value for making AJAX requests.
+
+=item inject_form_input (default: 1)
+
+If this is unset, hidden inputs will not be injected into your forms, and no
+HTML parsing will be done on the page responses.
+
+This can be useful if you only do AJAX requests, and can utilize headers
+and/or cookies instead, and not need the extra overhead of processing
+the HTML document every time.
+
+=item header_name (default: undef)
+
+If this is set, use the value as the name of the response heaer that the token
+can be sent in. This is useful for non-browser based submissions; e.g.
+Javascript AJAX requests.
+
+=item secret (default: undef)
+
+Signs the cookie with supplied secret (if set).
+
+=item blocked (default: undef)
+
+If this is set it should be a PSGI application that is returned instead of the
+default HTTP_FORBIDDEN(403) and text/plain response.
+
+This could be useful if you'd like to perform some action that's more in
+keeping with your application - e.g. return a styled error page.
+
+=back
+
+=head1 ERRORS
+
+The module emits various errors based on the cause of the XSRF detected. The
+messages will be of the form C<XSRF detected [reason]>
+
+=over 4
+
+=item form field missing
+
+The request was submitted but there was no value submitted in the form field
+specified by <C$self->parameter_name> [default: xsrf_token]
+
+=item xsrf token missing
+
+The application has been configured to accept an 'X-' header and no token
+value was found in either the header or a suitable form field. [default: undef]
+
+=item cookie missing
+
+There is no cookie with the name specified by C<$self->cookie_name> [default:
+PSGI-XSRF-Token]
+
+=item invalid token
+
+The cookie token and form value were both submitted correctly but the values
+do not match.
+
+=item invalid signature
+
+The cookies signature is invalid, indicating it was tampered with on the way
+to the browser.
+
+=back
+
+=cut
+
 use Digest::HMAC_SHA1 'hmac_sha1_hex';
 use HTML::Escape qw(escape_html);
 use HTML::Parser;
@@ -325,153 +474,6 @@ sub _set_cookie {
 }
 
 1;
-
-=head1 DESCRIPTION
-
-This middleware blocks XSRF. You can use this middleware without any
-modifications to your application.
-
-=head1 SYNOPSIS
-
-The simplest way to use the plugin is:
-
-    use Plack::Builder;
-
-    my $app = sub { ... };
-
-    builder {
-        enable 'XSRFBlock';
-        $app;
-    }
-
-You may also over-ride any, or all of these values:
-
-    builder {
-        enable 'XSRFBlock',
-            parameter_name          => 'xsrf_token',
-            cookie_name             => 'PSGI-XSRF-Token',
-            cookie_options          => {},
-            cookie_expiry_seconds   => (3 * 60 * 60),
-            token_per_request       => 0,
-            meta_tag                => undef,
-            inject_form_input       => 1,
-            header_name             => undef,
-            secret                  => undef,
-            blocked                 => sub {
-                                        return [ $status, $headers, $body ]
-                                    },
-        ;
-        $app;
-    }
-
-=head1 OPTIONS
-
-=over 4
-
-=item parameter_name (default: 'xsrf_token')
-
-The name assigned to the hidden form input containing the token.
-
-=item cookie_name (default: 'PSGI-XSRF-Token')
-
-The name of the cookie used to store the token value.
-
-=item cookie_expiry_seconds (default: 3*60*60)
-
-The expiration time in seconds of the XSRF token
-
-=item cookie_is_session_cookie (default: 0)
-
-If set to a true value, the XSRF token cookie will be set as a session cookie
-and C<cookie_expiry_seconds> will be ignored.
-
-=item cookie_options (default: {})
-
-Extra cookie options to be set with the cookie.  This is useful for things like
-setting C<HttpOnly> to tell the browser to only send it with HTTP requests,
-and C<Secure> on the cookie to force the cookie to only be sent on SSL requests.
-
-    builder {
-        enable 'XSRFBlock', cookie_options => { secure => 1, httponly => 1 };
-    }
-
-=item token_per_request (default: 0)
-
-If this is true a new token is assigned for each request made.
-
-This may make your application more secure, or less susceptible to
-double-submit issues.
-
-=item meta_tag (default: undef)
-
-If this is set, use the value as the name of the meta tag to add to the head
-section of output pages.
-
-This is useful when you are using javascript that requires access to the token
-value for making AJAX requests.
-
-=item inject_form_input (default: 1)
-
-If this is unset, hidden inputs will not be injected into your forms, and no
-HTML parsing will be done on the page responses.
-
-This can be useful if you only do AJAX requests, and can utilize headers
-and/or cookies instead, and not need the extra overhead of processing
-the HTML document every time.
-
-=item header_name (default: undef)
-
-If this is set, use the value as the name of the response heaer that the token
-can be sent in. This is useful for non-browser based submissions; e.g.
-Javascript AJAX requests.
-
-=item secret (default: undef)
-
-Signs the cookie with supplied secret (if set).
-
-=item blocked (default: undef)
-
-If this is set it should be a PSGI application that is returned instead of the
-default HTTP_FORBIDDEN(403) and text/plain response.
-
-This could be useful if you'd like to perform some action that's more in
-keeping with your application - e.g. return a styled error page.
-
-=back
-
-=head1 ERRORS
-
-The module emits various errors based on the cause of the XSRF detected. The
-messages will be of the form C<XSRF detected [reason]>
-
-=over 4
-
-=item form field missing
-
-The request was submitted but there was no value submitted in the form field
-specified by <C$self->parameter_name> [default: xsrf_token]
-
-=item xsrf token missing
-
-The application has been configured to accept an 'X-' header and no token
-value was found in either the header or a suitable form field. [default: undef]
-
-=item cookie missing
-
-There is no cookie with the name specified by C<$self->cookie_name> [default:
-PSGI-XSRF-Token]
-
-=item invalid token
-
-The cookie token and form value were both submitted correctly but the values
-do not match.
-
-=item invalid signature
-
-The cookies signature is invalid, indicating it was tampered with on the way
-to the browser.
-
-=back
 
 =head1 EXPLANATION
 

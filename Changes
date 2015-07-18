@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.10    2015-07-18 23:03:26+01:00 Europe/London
  - add scripts for BuildKite testing
  - dzil: Replace NoTabsTests with Test::NoTabs
  - fix #15: Use magic comment to crowbar in an essential dependency

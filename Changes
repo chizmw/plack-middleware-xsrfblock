@@ -4,6 +4,7 @@ Revision history for {{$dist->name}}
  - add scripts for BuildKite testing
  - dzil: Replace NoTabsTests with Test::NoTabs
  - fix #15: Use magic comment to crowbar in an essential dependency
+ - add magic comments for other author dependencies that aren't auto-detected
  - Add *skeleton* POD for methods
    This is a shockingly lazy way for me to get my dist to pass Pod::Coverage tests
  - re-arrange POD in file; so method POD appears in a sensible location

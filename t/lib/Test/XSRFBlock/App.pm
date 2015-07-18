@@ -208,6 +208,44 @@ sub setup_test_apps {
         $mapped;
     };
 
+    # create a new token only if the request is to a path which contains the string xhtml
+    $app{'psgix.input.non-buffered.token_per_request_sub'} = builder {
+        if ($ENV{PLACK_DEBUG}) {
+            use Log::Dispatch;
+            my $logger = Log::Dispatch->new(
+                outputs => [
+                    [
+                        'Screen',
+                        min_level => 'debug',
+                        stderr    => 1,
+                        newline   => 1
+                    ]
+                ],
+            );
+            enable "LogDispatch", logger => $logger;
+        }
+        enable 'XSRFBlock',
+            token_per_request => sub { $_[1]->path =~ /xhtml/i };
+        $mapped;
+    };
+
+    # psgix.input.buffered
+    # create a new token only if the request is to a path which contains the string xhtml
+    $app{'psgix.input.buffered.token_per_request_sub'} = builder {
+        enable sub {
+            my $app = shift;
+            sub {
+                my $env = shift;
+                my $req = Plack::Request->new($env);
+                my $content = $req->content; # <<< force psgix.input.buffered true.
+                $app->($env);
+            };
+        };
+        enable 'XSRFBlock',
+            token_per_request => sub { $_[1]->path =~ /xhtml/i };
+        $mapped;
+    };
+
     $app{'psgix.input.non-buffered.token_per_session'} = builder {
         if ($ENV{PLACK_DEBUG}) {
             use Log::Dispatch;

@@ -1,6 +1,11 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - add scripts for BuildKite testing
+ - dzil: Replace NoTabsTests with Test::NoTabs
+ - fix #15: Use magic comment to crowbar in an essential dependency
+ - Add *skeleton* POD for methods
+   This is a shockingly lazy way for me to get my dist to pass Pod::Coverage tests
 
 0.0.9     2014-10-13 10:15:38+00:00 UTC
  - Optionally allow signed cookies escape token injected into html (pull #14)

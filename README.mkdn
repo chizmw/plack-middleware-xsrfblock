@@ -4,7 +4,7 @@ Plack::Middleware::XSRFBlock - Block XSRF Attacks with minimal changes to your a
 
 # VERSION
 
-version 0.0.11
+version 0.0.12
 
 # SYNOPSIS
 
@@ -154,6 +154,14 @@ messages will be of the form `XSRF detected [reason]`
 
     The cookies signature is invalid, indicating it was tampered with on the way
     to the browser.
+
+## detect\_xsrf($self, $request, $env)
+
+## cookie\_handler($self, $request, $env, $res)
+
+## filter\_response\_html($self, $request, $env, $res, $token)
+
+## filter\_response($self, $request, $env)
 
 ## invalid\_signature($self, $value)
 

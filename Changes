@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Refactor internals to make extensible (PR #17)
+ - dzil: use Git::Contributors instead of ContributorsFromGit (PR #18)
 
 0.0.11    2015-09-07 16:44:57+00:00 UTC
 

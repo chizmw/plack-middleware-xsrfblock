@@ -35,6 +35,7 @@ You may also over-ride any, or all of these values:
             inject_form_input       => 1,
             header_name             => undef,
             secret                  => undef,
+            http_method_regex       => qr{^post$}i,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
                                     },
@@ -81,6 +82,11 @@ This may make your application more secure, but more susceptible to
 double-submit issues.
 
 If this is a coderef, the coderef will be evaluated with the following arguments:
+
+=item http_method_regex (default: qr{^post$}i)
+
+Which HTTP methods to check. Can be useful to also handle PUT, DELETE,
+PATCH, and the like.
 
 =over
 
@@ -181,6 +187,7 @@ use Plack::Util::Accessor qw(
     cookie_name
     cookie_is_session_cookie
     cookie_options
+    http_method_regex
     inject_form_input
     logger
     meta_tag
@@ -199,6 +206,9 @@ sub prepare_app {
 
     # default to 1 so we inject hidden inputs to forms
     $self->inject_form_input(1) unless defined $self->inject_form_input;
+
+    # match methods
+    $self->http_method_regex( $self->http_method_regex || qr{^post$}i );
 
     # store the cookie_name
     $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );
@@ -294,8 +304,8 @@ sub call {
     my $request = Plack::Request->new($env);
 
     # deal with form posts
-    if ($request->method =~ m{^post$}i) {
-        $self->log(info => 'POST submitted');
+    if ($request->method =~ $self->http_method_regex) {
+        $self->log(info => 'form submitted');
 
         my $msg = $self->detect_xsrf($request, $env);
         return $self->xsrf_detected({ env => $env, msg => $msg })
@@ -401,12 +411,12 @@ sub filter_response_html {
                     );
             }
 
-            # If tag isn't 'form' and method isn't 'post' we dont care
+            # If tag isn't 'form' and method isn't matched, we dont care
             return unless
                     defined $tag
                 && defined $attr->{'method'}
                 && $tag eq 'form'
-                && $attr->{'method'} =~ /post/i;
+                && $attr->{'method'} =~ $self->http_method_regex;
 
             if(
                 !(

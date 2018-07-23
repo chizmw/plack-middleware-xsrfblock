@@ -35,6 +35,8 @@ You may also over-ride any, or all of these values:
             inject_form_input       => 1,
             header_name             => undef,
             secret                  => undef,
+            http_method_regex       => qr{^post$}i,
+            contents_to_filter_regex => qr{^(text/html|application/xhtml(?:\+xml)?)$}i,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
                                     },
@@ -81,6 +83,15 @@ This may make your application more secure, but more susceptible to
 double-submit issues.
 
 If this is a coderef, the coderef will be evaluated with the following arguments:
+
+=item http_method_regex (default: qr{^post$}i)
+
+Which HTTP methods to check. Can be useful to also handle PUT, DELETE,
+PATCH, and the like.
+
+=item contents_to_filter_regex default: qr{^(text/html|application/xhtml(?:\+xml)?)$}i)
+
+Only modify <form> elements in responses whose content type matches this regex
 
 =over
 
@@ -181,6 +192,8 @@ use Plack::Util::Accessor qw(
     cookie_name
     cookie_is_session_cookie
     cookie_options
+    http_method_regex
+    contents_to_filter_regex
     inject_form_input
     logger
     meta_tag
@@ -199,6 +212,15 @@ sub prepare_app {
 
     # default to 1 so we inject hidden inputs to forms
     $self->inject_form_input(1) unless defined $self->inject_form_input;
+
+    # match methods
+    $self->http_method_regex( $self->http_method_regex || qr{^post$}i );
+
+    # match content types
+    $self->contents_to_filter_regex(
+        $self->contents_to_filter_regex ||
+            qr{^(?: (?:text/html) | (?:application/xhtml(?:\+xml)?) )$}ix,
+    );
 
     # store the cookie_name
     $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );
@@ -236,7 +258,11 @@ sub prepare_app {
 
 =head2 detect_xsrf($self, $request, $env)
 
+returns a message explaining the XSRF-related problem, or C<undef> if
+there's no problem
+
 =cut
+
 sub detect_xsrf {
     my $self    = shift;
     my $request = shift;
@@ -294,8 +320,8 @@ sub call {
     my $request = Plack::Request->new($env);
 
     # deal with form posts
-    if ($request->method =~ m{^post$}i) {
-        $self->log(info => 'POST submitted');
+    if ($request->method =~ $self->http_method_regex) {
+        $self->log(info => 'form submitted');
 
         my $msg = $self->detect_xsrf($request, $env);
         return $self->xsrf_detected({ env => $env, msg => $msg })
@@ -305,33 +331,58 @@ sub call {
     return $self->filter_response($request, $env);
 }
 
-=head2 cookie_handler($self, $request, $env, $res)
+=head2 should_be_filtered($self, $request, $env, $res)
+
+returns true if the response should be filtered by this middleware
+(currently, if its content-type matches C<contents_to_filter_regex>)
 
 =cut
-sub cookie_handler {
+
+sub should_be_filtered {
     my ($self, $request, $env, $res) = @_;
 
-    # grab the cookie where we store the token
-    my $cookie_value = $request->cookies->{$self->cookie_name};
-
-    # Determine whether to create a new token, based on the request
-    $cookie_value = $self->_token_generator->()
-        if $self->token_per_request->( $self, $request, $env );
-
-    # make it easier to work with the headers
     my $headers = Plack::Util::headers($res->[1]);
-
-    # we can't form-munge anything non-HTML
     my $ct = $headers->get('Content-Type') || '';
-    if($ct !~ m{^text/html}i and $ct !~ m{^application/xhtml[+]xml}i){
-        return $res;
-    }
+    return !! ($ct =~ $self->contents_to_filter_regex);
+}
 
-    # GITHUB ISSUE #12 - set cookie after we're happy it's HTML
-    # get the token value from:
-    # - cookie value, if it's already set
-    # - from the generator, if we don't have one yet
-    my $token = $cookie_value ||= $self->_token_generator->();
+=head2 generate_token($self, $request, $env, $res)
+
+returns the token value to use for this response.  Gets the token value from:
+
+=over
+
+=item *
+
+the cookie value, if it's already set
+
+=item *
+
+from the generator, if the cookie is not set, or if we want a
+different token for each request
+
+=back
+
+=cut
+
+sub generate_token {
+    my ($self, $request, $env, $res) = @_;
+
+    my $token = $request->cookies->{$self->cookie_name};
+    $token = $self->_token_generator->()
+        if !$token or $self->token_per_request->( $self, $request, $env );
+
+    return $token;
+}
+
+=head2 cookie_handler($self, $request, $env, $res, $token)
+
+sets the given token as a cookie in the response
+
+=cut
+
+sub cookie_handler {
+    my ($self, $request, $env, $res, $token) = @_;
 
     my %cookie_expires;
     unless ( $self->cookie_is_session_cookie ) {
@@ -346,12 +397,18 @@ sub cookie_handler {
         %cookie_expires,
     );
 
-    return $token;
+    return;
 }
 
 =head2 filter_response_html($self, $request, $env, $res, $token)
 
+Filters the response, injecting C<< <input> >> elements with the token
+value into all forms whose method matches C<http_method_regex>.
+
+Streaming responses are still streaming after the filtering.
+
 =cut
+
 sub filter_response_html {
     my ($self, $request, $env, $res, $token) = @_;
 
@@ -401,12 +458,12 @@ sub filter_response_html {
                     );
             }
 
-            # If tag isn't 'form' and method isn't 'post' we dont care
+            # If tag isn't 'form' and method isn't matched, we dont care
             return unless
                     defined $tag
                 && defined $attr->{'method'}
                 && $tag eq 'form'
-                && $attr->{'method'} =~ /post/i;
+                && $attr->{'method'} =~ $self->http_method_regex;
 
             if(
                 !(
@@ -461,14 +518,23 @@ sub filter_response_html {
 
 =head2 filter_response($self, $request, $env)
 
+Calls the application, and (if the response L<< /C<should_be_filtered>
+>>), it injects the token in the cookie and (if L<<
+/C<inject_form_input> >>) the forms.
+
 =cut
+
 sub filter_response {
     my ($self, $request, $env) = @_;
 
     return Plack::Util::response_cb($self->app->($env), sub {
         my $res = shift;
 
-        my $token = $self->cookie_handler($request, $env, $res);
+        return $res unless $self->should_be_filtered($request, $env, $res);
+
+        my $token = $self->generate_token($request, $env, $res);
+
+        $self->cookie_handler($request, $env, $res, $token);
 
         return $res unless $self->inject_form_input;
 
@@ -478,12 +544,16 @@ sub filter_response {
 
 =head2 invalid_signature($self, $value)
 
+Returns true if the value is not correctly signed. If we're not
+signing tokens, this method always returns false.
+
 =cut
+
 sub invalid_signature {
     my ($self, $value) = @_;
 
     # we dont use signed cookies
-    return if !defined $self->secret;
+    return 0 if !defined $self->secret;
 
     # cookie isn't signed
     my ($token, $signature) = split /--/, $value;
@@ -495,7 +565,32 @@ sub invalid_signature {
 
 =head2 xsrf_detected($self, $args)
 
+Invoked when the XSRF is detected. Calls the L<< /C<blocked> >>
+coderef if we have it, or returns a 403.
+
+The C<blocked> coderef is invoked like:
+
+  $self->blocked->($env,$msg, app => $self->app);
+
+=over
+
+=item *
+
+the original request PSGI environment
+
+=item *
+
+the error message (from L<< /C<detect_xsrf> >>)
+
+=item *
+
+a hash, currently C<< app => $self->app >>, so you can call the
+original application
+
+=back
+
 =cut
+
 sub xsrf_detected {
     my $self    = shift;
     my $args    = shift;
@@ -519,7 +614,10 @@ sub xsrf_detected {
 
 =head2 log($self, $level, $msg)
 
+log through the PSGI logger, if defined
+
 =cut
+
 sub log {
     my ($self, $level, $msg) = @_;
     $self->logger->({ level => $level, message => "XSRFBlock: $msg" });

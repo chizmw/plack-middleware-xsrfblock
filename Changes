@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.13    2018-07-23 12:01:27+01:00 Europe/London
  - Replace $@ with $msg (#19)
  - Add missing use statement (#20)
  - Update Build Status icon/badge

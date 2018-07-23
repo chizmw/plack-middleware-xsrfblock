@@ -620,7 +620,7 @@ L<Plack>
 
 ## BUILD STATUS
 
-[![Build status](https://badge.buildkite.com/330e67514dd501f1827bcf33db423ccadf201caf5b2b563fbf.svg)](https://buildkite.com/chizography/plack-middleware-xsrfblock)
+[![Build Status](https://travis-ci.org/chiselwright/plack-middleware-xsrfblock.svg?branch=master)](https://travis-ci.org/chiselwright/plack-middleware-xsrfblock)
 
 =end markdown
 

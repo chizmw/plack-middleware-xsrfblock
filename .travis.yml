@@ -1,35 +1,43 @@
-dist: trusty
-language: perl
+jobs:
+    include:
+        - if: tag IS blank
+
+dist:       trusty
+language:   perl
 perl:
-- "5.26"
-- "5.24"
-- '5.22'    # because there's no 5.22.2 :(
-- '5.20.3'
-- '5.18.2'  # because it's all that seems to be available
+    - "5.26"
+    - "5.24"
+    - '5.22'    # because there's no 5.22.2 :(
+    - '5.20.3'
+    - '5.18.2'  # because it's all that seems to be available
+
 before_install:
-- git clone git://github.com/haarg/perl-travis-helper
-- source perl-travis-helper/init
-- build-perl
-- perl -V
-- cpan-install Dist::Zilla~6.012
-- git config --global user.email "travis.ci@chizography.net"
-- git config --global user.name "Travis CI"
-- build-dist
-- cd $BUILD_DIR
+    - git clone git://github.com/haarg/perl-travis-helper
+    - source perl-travis-helper/init
+    - build-perl
+    - perl -V
+    - cpan-install Dist::Zilla~6.012
+    - git config --global user.email "travis.ci@chizography.net"
+    - git config --global user.name "Travis CI"
+    - build-dist
+    - cd $BUILD_DIR
+
 install:
-- export RELEASE_TESTING=1 AUTOMATED_TESTING=1 AUTHOR_TESTING=1 HARNESS_OPTIONS=c
-  HARNESS_TIMER=1
-- cpanm --quiet --notest Devel::Cover::Report::Coveralls
-- cpanm --quiet --notest --installdeps .
+    - export RELEASE_TESTING=1 AUTOMATED_TESTING=1 AUTHOR_TESTING=1 HARNESS_OPTIONS=c HARNESS_TIMER=1
+    - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+    - cpanm --quiet --notest --installdeps .
+
 script:
-- PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove
-  -lrsv t
-- cover
+    - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrsv t
+    - cover
+
 after_success:
-- cover -report coveralls
+    - cover -report coveralls
+
 notifications:
-  slack:
-    secure: pn+hfW8XqPgHp2u2N1Kyqwcx0/4ABtT86HUQZr6btiI3x/IYPEPdFBwOBSlqzNx6tYD/Eml4BivIJNszuzdM4zcEi1nzDYz2PmPEB3MeBBm5PayWMegCy6UrIuHSFVV18wj5RwkH0zCt7OZWcZx9P6UjMc320X69CH+l1ivTWKGD8Zw0Td92YIF60iwJf5j7udamRGwaAK2yixdONfyTUYhWe+9zytQIi62o/udXbq0YA1Q+P7iohbWaYwgqKabhHWSMnmx1uMixZj7Rb9KT01q7V0Ulu5cgTI0VmZ7FbKCmYdBoZk6HEldfcCg+nUdHIOWmNQqaeJy7N9urZlgnvByLN+nw0Pr4LFu6MMEWTN+HLuk3DrZlPSXzmR5/IUd8BrbM+ggYYrGdDm8OY6s4d36u2Y5cbC7qPQadGn0ZZxPg+gDx/SwQ5t7g6LB72DVTXtbDUMrcGKS9C7BSaKfJwP8YC4PJaMDjYd0VQ55xGsKZMNFiW12yoWbmV78ZG5sMM4QzgUOQFW6ZINlGPgKs2dHOBK6mVYpl2ncaZYHe2maElm2MQDM2FPmQVfs5axDrDjlJcyztvKRYClCHD2BUxYMEEI5TA7IBMuZujFfuRs84klTaz/JYJnamuhVh+Jo3GazbSw4mo3HO/WkaQRG+IX9F2jIR8XnzPR77lY8R+hg=
+    slack:
+        secure: pn+hfW8XqPgHp2u2N1Kyqwcx0/4ABtT86HUQZr6btiI3x/IYPEPdFBwOBSlqzNx6tYD/Eml4BivIJNszuzdM4zcEi1nzDYz2PmPEB3MeBBm5PayWMegCy6UrIuHSFVV18wj5RwkH0zCt7OZWcZx9P6UjMc320X69CH+l1ivTWKGD8Zw0Td92YIF60iwJf5j7udamRGwaAK2yixdONfyTUYhWe+9zytQIi62o/udXbq0YA1Q+P7iohbWaYwgqKabhHWSMnmx1uMixZj7Rb9KT01q7V0Ulu5cgTI0VmZ7FbKCmYdBoZk6HEldfcCg+nUdHIOWmNQqaeJy7N9urZlgnvByLN+nw0Pr4LFu6MMEWTN+HLuk3DrZlPSXzmR5/IUd8BrbM+ggYYrGdDm8OY6s4d36u2Y5cbC7qPQadGn0ZZxPg+gDx/SwQ5t7g6LB72DVTXtbDUMrcGKS9C7BSaKfJwP8YC4PJaMDjYd0VQ55xGsKZMNFiW12yoWbmV78ZG5sMM4QzgUOQFW6ZINlGPgKs2dHOBK6mVYpl2ncaZYHe2maElm2MQDM2FPmQVfs5axDrDjlJcyztvKRYClCHD2BUxYMEEI5TA7IBMuZujFfuRs84klTaz/JYJnamuhVh+Jo3GazbSw4mo3HO/WkaQRG+IX9F2jIR8XnzPR77lY8R+hg=
+
 matrix:
-  allow_failures:
-    - perl: blead       # ignore failures for blead perl
+    allow_failures:
+        - perl: blead       # ignore failures for blead perl

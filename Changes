@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - limit munging to appropriate content-types (@dakkar) (#22)
+ - allow blocking non-POST methods (@dakkar) (#22)
 
 0.0.13    2018-07-23 12:01:27+01:00 Europe/London
  - Replace $@ with $msg (#19)

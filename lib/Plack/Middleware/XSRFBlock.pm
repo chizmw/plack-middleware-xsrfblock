@@ -172,6 +172,7 @@ to the browser.
 use Digest::HMAC_SHA1 'hmac_sha1_hex';
 use HTTP::Status qw(:constants);
 
+use Plack::Request;
 use Plack::Response;
 use Plack::Util;
 use Plack::Util::Accessor qw(

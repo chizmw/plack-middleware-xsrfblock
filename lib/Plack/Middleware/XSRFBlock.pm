@@ -172,6 +172,7 @@ to the browser.
 use Digest::HMAC_SHA1 'hmac_sha1_hex';
 use HTTP::Status qw(:constants);
 
+use Plack::Request;
 use Plack::Response;
 use Plack::Util;
 use Plack::Util::Accessor qw(
@@ -506,7 +507,7 @@ sub xsrf_detected {
     $self->log(error => 'XSRF detected, returning HTTP_FORBIDDEN');
 
     if (my $app_for_blocked = $self->blocked) {
-        return $app_for_blocked->($env, $@, app => $self->app);
+        return $app_for_blocked->($env, $msg, app => $self->app);
     }
 
     return [
@@ -619,7 +620,7 @@ L<Plack>
 
 ## BUILD STATUS
 
-[![Build status](https://badge.buildkite.com/330e67514dd501f1827bcf33db423ccadf201caf5b2b563fbf.svg)](https://buildkite.com/chizography/plack-middleware-xsrfblock)
+[![Build Status](https://travis-ci.org/chiselwright/plack-middleware-xsrfblock.svg?branch=master)](https://travis-ci.org/chiselwright/plack-middleware-xsrfblock)
 
 =end markdown
 

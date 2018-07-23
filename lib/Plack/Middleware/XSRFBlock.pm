@@ -258,7 +258,11 @@ sub prepare_app {
 
 =head2 detect_xsrf($self, $request, $env)
 
+returns a message explaining the XSRF-related problem, or C<undef> if
+there's no problem
+
 =cut
+
 sub detect_xsrf {
     my $self    = shift;
     my $request = shift;
@@ -327,6 +331,13 @@ sub call {
     return $self->filter_response($request, $env);
 }
 
+=head2 should_be_filtered($self, $request, $env, $res)
+
+returns true if the response should be filtered by this middleware
+(currently, if its content-type matches C<contents_to_filter_regex>)
+
+=cut
+
 sub should_be_filtered {
     my ($self, $request, $env, $res) = @_;
 
@@ -335,13 +346,27 @@ sub should_be_filtered {
     return !! ($ct =~ $self->contents_to_filter_regex);
 }
 
+=head2 generate_token($self, $request, $env, $res)
+
+returns the token value to use for this response.  Gets the token value from:
+
+=over
+
+=item *
+
+the cookie value, if it's already set
+
+=item *
+
+from the generator, if the cookie is not set, or if we want a
+different token for each request
+
+=back
+
+=cut
+
 sub generate_token {
     my ($self, $request, $env, $res) = @_;
-
-    # get the token value from:
-    # - cookie value, if it's already set
-    # - from the generator, if we don't have one yet, or if we want
-    #   one per request
 
     my $token = $request->cookies->{$self->cookie_name};
     $token = $self->_token_generator->()
@@ -351,6 +376,8 @@ sub generate_token {
 }
 
 =head2 cookie_handler($self, $request, $env, $res, $token)
+
+sets the given token as a cookie in the response
 
 =cut
 
@@ -375,7 +402,13 @@ sub cookie_handler {
 
 =head2 filter_response_html($self, $request, $env, $res, $token)
 
+Filters the response, injecting C<< <input> >> elements with the token
+value into all forms whose method matches C<http_method_regex>.
+
+Streaming responses are still streaming after the filtering.
+
 =cut
+
 sub filter_response_html {
     my ($self, $request, $env, $res, $token) = @_;
 
@@ -485,7 +518,12 @@ sub filter_response_html {
 
 =head2 filter_response($self, $request, $env)
 
+Calls the application, and (if the response L<< /C<should_be_filtered>
+>>), it injects the token in the cookie and (if L<<
+/C<inject_form_input> >>) the forms.
+
 =cut
+
 sub filter_response {
     my ($self, $request, $env) = @_;
 
@@ -506,12 +544,16 @@ sub filter_response {
 
 =head2 invalid_signature($self, $value)
 
+Returns true if the value is not correctly signed. If we're not
+signing tokens, this method always returns false.
+
 =cut
+
 sub invalid_signature {
     my ($self, $value) = @_;
 
     # we dont use signed cookies
-    return if !defined $self->secret;
+    return 0 if !defined $self->secret;
 
     # cookie isn't signed
     my ($token, $signature) = split /--/, $value;
@@ -523,7 +565,32 @@ sub invalid_signature {
 
 =head2 xsrf_detected($self, $args)
 
+Invoked when the XSRF is detected. Calls the L<< /C<blocked> >>
+coderef if we have it, or returns a 403.
+
+The C<blocked> coderef is invoked like:
+
+  $self->blocked->($env,$msg, app => $self->app);
+
+=over
+
+=item *
+
+the original request PSGI environment
+
+=item *
+
+the error message (from L<< /C<detect_xsrf> >>)
+
+=item *
+
+a hash, currently C<< app => $self->app >>, so you can call the
+original application
+
+=back
+
 =cut
+
 sub xsrf_detected {
     my $self    = shift;
     my $args    = shift;
@@ -547,7 +614,10 @@ sub xsrf_detected {
 
 =head2 log($self, $level, $msg)
 
+log through the PSGI logger, if defined
+
 =cut
+
 sub log {
     my ($self, $level, $msg) = @_;
     $self->logger->({ level => $level, message => "XSRFBlock: $msg" });

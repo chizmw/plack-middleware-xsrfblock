@@ -1,6 +1,11 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - Replace $@ with $msg (#19)
+ - Add missing use statement (#20)
+ - Update Build Status icon/badge
+ - Travis: add 5.26 and 5.24 as versions to test with
+ - Update Dist::Zilla used in Travis
 
 0.0.12    2017-07-13 06:35:46-04:00 America/New_York
  - Refactor internals to make extensible (PR #17)

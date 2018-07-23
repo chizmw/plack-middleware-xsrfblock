@@ -11,7 +11,7 @@ before_install:
 - source perl-travis-helper/init
 - build-perl
 - perl -V
-- cpan-install Dist::Zilla~6.008
+- cpan-install Dist::Zilla~6.012
 - git config --global user.email "travis.ci@chizography.net"
 - git config --global user.name "Travis CI"
 - build-dist

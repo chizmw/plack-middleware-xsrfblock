@@ -58,6 +58,11 @@ my $form_localhost_port = <<FORM;
 </html>
 FORM
 
+my $csv_with_html_form = <<'CSV';
+a,b,c,d
+1,2,3,"<form action='/' method='post'>"
+CSV
+
 sub base_app {
     my $base_app = sub {
         my $req = Plack::Request->new(shift);
@@ -91,6 +96,7 @@ sub mapped_app {
         mount "/form/html-outside" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form_outside ] ] };
         mount "/form/html-localhost" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form_localhost ] ] };
         mount "/form/html-localhost-port" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form_localhost_port ] ] };
+        mount "/csv" => sub { [ HTTP_OK, [ 'Content-type' => 'text/csv' ], [ $csv_with_html_form ] ] };
     };
 }
 

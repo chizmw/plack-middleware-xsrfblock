@@ -36,6 +36,7 @@ You may also over-ride any, or all of these values:
             header_name             => undef,
             secret                  => undef,
             http_method_regex       => qr{^post$}i,
+            contents_to_filter_regex => qr{^(text/html|application/xhtml(?:\+xml)?)$}i,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
                                     },
@@ -87,6 +88,10 @@ If this is a coderef, the coderef will be evaluated with the following arguments
 
 Which HTTP methods to check. Can be useful to also handle PUT, DELETE,
 PATCH, and the like.
+
+=item contents_to_filter_regex default: qr{^(text/html|application/xhtml(?:\+xml)?)$}i)
+
+Only modify <form> elements in responses whose content type matches this regex
 
 =over
 
@@ -188,6 +193,7 @@ use Plack::Util::Accessor qw(
     cookie_is_session_cookie
     cookie_options
     http_method_regex
+    contents_to_filter_regex
     inject_form_input
     logger
     meta_tag
@@ -209,6 +215,12 @@ sub prepare_app {
 
     # match methods
     $self->http_method_regex( $self->http_method_regex || qr{^post$}i );
+
+    # match content types
+    $self->contents_to_filter_regex(
+        $self->contents_to_filter_regex ||
+            qr{^(?: (?:text/html) | (?:application/xhtml(?:\+xml)?) )$}ix,
+    );
 
     # store the cookie_name
     $self->cookie_name( $self->cookie_name || 'PSGI-XSRF-Token' );
@@ -315,33 +327,35 @@ sub call {
     return $self->filter_response($request, $env);
 }
 
-=head2 cookie_handler($self, $request, $env, $res)
-
-=cut
-sub cookie_handler {
+sub should_be_filtered {
     my ($self, $request, $env, $res) = @_;
 
-    # grab the cookie where we store the token
-    my $cookie_value = $request->cookies->{$self->cookie_name};
-
-    # Determine whether to create a new token, based on the request
-    $cookie_value = $self->_token_generator->()
-        if $self->token_per_request->( $self, $request, $env );
-
-    # make it easier to work with the headers
     my $headers = Plack::Util::headers($res->[1]);
-
-    # we can't form-munge anything non-HTML
     my $ct = $headers->get('Content-Type') || '';
-    if($ct !~ m{^text/html}i and $ct !~ m{^application/xhtml[+]xml}i){
-        return $res;
-    }
+    return !! ($ct =~ $self->contents_to_filter_regex);
+}
 
-    # GITHUB ISSUE #12 - set cookie after we're happy it's HTML
+sub generate_token {
+    my ($self, $request, $env, $res) = @_;
+
     # get the token value from:
     # - cookie value, if it's already set
-    # - from the generator, if we don't have one yet
-    my $token = $cookie_value ||= $self->_token_generator->();
+    # - from the generator, if we don't have one yet, or if we want
+    #   one per request
+
+    my $token = $request->cookies->{$self->cookie_name};
+    $token = $self->_token_generator->()
+        if !$token or $self->token_per_request->( $self, $request, $env );
+
+    return $token;
+}
+
+=head2 cookie_handler($self, $request, $env, $res, $token)
+
+=cut
+
+sub cookie_handler {
+    my ($self, $request, $env, $res, $token) = @_;
 
     my %cookie_expires;
     unless ( $self->cookie_is_session_cookie ) {
@@ -356,7 +370,7 @@ sub cookie_handler {
         %cookie_expires,
     );
 
-    return $token;
+    return;
 }
 
 =head2 filter_response_html($self, $request, $env, $res, $token)
@@ -478,7 +492,11 @@ sub filter_response {
     return Plack::Util::response_cb($self->app->($env), sub {
         my $res = shift;
 
-        my $token = $self->cookie_handler($request, $env, $res);
+        return $res unless $self->should_be_filtered($request, $env, $res);
+
+        my $token = $self->generate_token($request, $env, $res);
+
+        $self->cookie_handler($request, $env, $res, $token);
 
         return $res unless $self->inject_form_input;
 

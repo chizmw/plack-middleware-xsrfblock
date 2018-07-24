@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - fix contents_to_filter_regex (@dakkar) (#23)
+ - simpler non-html test (@dakkar) (#23)
 
 0.0.14    2018-07-23 17:18:03+01:00 Europe/London
  - limit munging to appropriate content-types (@dakkar) (#22)

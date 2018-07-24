@@ -28,7 +28,7 @@ for my $appname ('psgix.input.non-buffered', 'psgix.input.buffered') {
             my ($res, $h_cookie, $jar, $token);
             $jar = $ua->cookie_jar;
 
-            $res = $cb->(GET "/csv");
+            $res = $cb->(GET "/form/text");
             is (
                 $res->code,
                 HTTP_OK,

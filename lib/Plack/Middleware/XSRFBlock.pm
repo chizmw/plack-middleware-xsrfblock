@@ -36,7 +36,7 @@ You may also over-ride any, or all of these values:
             header_name             => undef,
             secret                  => undef,
             http_method_regex       => qr{^post$}i,
-            contents_to_filter_regex => qr{^(text/html|application/xhtml(?:\+xml)?)$}i,
+            contents_to_filter_regex => qr{^(text/html|application/xhtml(?:\+xml)?)\b}i,
             blocked                 => sub {
                                         return [ $status, $headers, $body ]
                                     },
@@ -89,7 +89,7 @@ If this is a coderef, the coderef will be evaluated with the following arguments
 Which HTTP methods to check. Can be useful to also handle PUT, DELETE,
 PATCH, and the like.
 
-=item contents_to_filter_regex default: qr{^(text/html|application/xhtml(?:\+xml)?)$}i)
+=item contents_to_filter_regex default: qr{^(text/html|application/xhtml(?:\+xml)?)\b}i)
 
 Only modify <form> elements in responses whose content type matches this regex
 
@@ -219,7 +219,7 @@ sub prepare_app {
     # match content types
     $self->contents_to_filter_regex(
         $self->contents_to_filter_regex ||
-            qr{^(?: (?:text/html) | (?:application/xhtml(?:\+xml)?) )$}ix,
+            qr{^(?: (?:text/html) | (?:application/xhtml(?:\+xml)?) )\b}ix,
     );
 
     # store the cookie_name

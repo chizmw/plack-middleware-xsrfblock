@@ -58,11 +58,6 @@ my $form_localhost_port = <<FORM;
 </html>
 FORM
 
-my $csv_with_html_form = <<'CSV';
-a,b,c,d
-1,2,3,"<form action='/' method='post'>"
-CSV
-
 sub base_app {
     my $base_app = sub {
         my $req = Plack::Request->new(shift);
@@ -86,8 +81,8 @@ sub blocked_app {
 sub mapped_app {
     my $mapped = builder {
         mount "/post" => base_app();
-        mount "/form/html" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form ] ] };
-        mount "/form/xhtml" => sub { [ HTTP_OK, [ 'Content-Type' => 'application/xhtml+xml' ], [ $form ] ] };
+        mount "/form/html" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html; charset=utf-8' ], [ $form ] ] };
+        mount "/form/xhtml" => sub { [ HTTP_OK, [ 'Content-Type' => 'application/xhtml+xml; charset=utf-8' ], [ $form ] ] };
         mount "/form/text" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/plain' ], [ $form ] ] };
         mount "/form/html-charset" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html; charset=UTF-8' ], [ $form ] ] };
         mount "/form/xhtml-charset" => sub { [ HTTP_OK, [ 'Content-Type' => 'application/xhtml+xml; charset=UTF-8' ], [ $form ] ] };
@@ -96,7 +91,6 @@ sub mapped_app {
         mount "/form/html-outside" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form_outside ] ] };
         mount "/form/html-localhost" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form_localhost ] ] };
         mount "/form/html-localhost-port" => sub { [ HTTP_OK, [ 'Content-Type' => 'text/html' ], [ $form_localhost_port ] ] };
-        mount "/csv" => sub { [ HTTP_OK, [ 'Content-type' => 'text/csv' ], [ $csv_with_html_form ] ] };
     };
 }
 

@@ -1,6 +1,7 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - don't use Data::Printer (@dakkar) (#24)
 
 0.0.15    2018-07-24 13:44:11+01:00 Europe/London
  - fix contents_to_filter_regex (@dakkar) (#23)

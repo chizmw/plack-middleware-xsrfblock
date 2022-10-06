@@ -1,6 +1,9 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+ - remove internal _token_generator (wasn't documented, couldn't
+   really be changed without also changing invalid_signature, and
+   produced a ref loop)
 
 0.0.16    2018-07-25 14:23:36+01:00 Europe/London
  - don't use Data::Printer (@dakkar) (#24)

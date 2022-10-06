@@ -201,7 +201,6 @@ use Plack::Util::Accessor qw(
     parameter_name
     header_name
     secret
-    _token_generator
 );
 
 sub prepare_app {
@@ -241,19 +240,6 @@ sub prepare_app {
 
     # default to a cookie life of three hours
     $self->cookie_expiry_seconds( $self->cookie_expiry_seconds || (3 * 60 * 60) );
-
-    $self->_token_generator(sub{
-        my $data    = rand() . $$ . {} . time;
-        my $key     = "@INC";
-        my $digest  = hmac_sha1_hex($data, $key);
-
-        if (defined $self->secret) {
-            my $sig = hmac_sha1_hex($digest, $self->secret);
-            $digest .= "--$sig";
-        }
-
-        return $digest;
-    });
 }
 
 =head2 detect_xsrf($self, $request, $env)
@@ -348,20 +334,13 @@ sub should_be_filtered {
 
 =head2 generate_token($self, $request, $env, $res)
 
-returns the token value to use for this response.  Gets the token value from:
+Returns the token value to use for this response.
 
-=over
+If the cookie is already set, and we do not want a different token for
+each request, returns the cookie's value.
 
-=item *
-
-the cookie value, if it's already set
-
-=item *
-
-from the generator, if the cookie is not set, or if we want a
-different token for each request
-
-=back
+Otherwise, generates a new value based on some random data. If
+C<secret> is set, the value is also signed.
 
 =cut
 
@@ -369,8 +348,17 @@ sub generate_token {
     my ($self, $request, $env, $res) = @_;
 
     my $token = $request->cookies->{$self->cookie_name};
-    $token = $self->_token_generator->()
-        if !$token or $self->token_per_request->( $self, $request, $env );
+
+    return $token if $token && !$self->token_per_request->( $self, $request, $env );
+
+    my $data    = rand() . $$ . {} . time;
+    my $key     = "@INC";
+    $token      = hmac_sha1_hex($data, $key);
+
+    if (defined $self->secret) {
+        my $sig = hmac_sha1_hex($token, $self->secret);
+        $token .= "--$sig";
+    }
 
     return $token;
 }

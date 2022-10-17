@@ -587,7 +587,7 @@ sub xsrf_detected {
         ? sprintf('XSRF detected [%s]', $args->{msg})
         : 'XSRF detected';
 
-    $self->log(error => 'XSRF detected, returning HTTP_FORBIDDEN');
+    $self->log(error => "$msg, returning HTTP_FORBIDDEN");
 
     if (my $app_for_blocked = $self->blocked) {
         return $app_for_blocked->($env, $msg, app => $self->app);

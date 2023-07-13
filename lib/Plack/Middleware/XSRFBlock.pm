@@ -588,6 +588,7 @@ sub xsrf_detected {
         : 'XSRF detected';
 
     if (my $app_for_blocked = $self->blocked) {
+        $self->log(info => "$msg, invoking `blocked` coderef");
         return $app_for_blocked->($env, $msg, app => $self->app);
     }
 

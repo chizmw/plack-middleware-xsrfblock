@@ -266,7 +266,7 @@ sub detect_xsrf {
     # We can say for certain that if we don't have the header_name set
     # it's a missing form parameter
     # If it is set ... well, either could be missing
-    if (not defined $val and not length $val) {
+    if (!defined $val || !length $val) {
         # no X- headers expected
         return 'form field missing'
             if not defined $self->header_name;

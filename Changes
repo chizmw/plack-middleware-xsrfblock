@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.0.19    2023-07-14 10:17:10+01:00 Europe/London
  - SECURITY FIX! when *not* using signed cookies, it was possible to
    bypass XSRFBlock by POSTing an empty form value and an empty cookie
  - bump minimum perl version to 5.12, most dependencies already
